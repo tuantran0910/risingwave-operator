@@ -27,6 +27,7 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - secrets
   - services
   verbs:
   - create
@@ -86,6 +87,7 @@ rules:
   resources:
   - risingwaves
   - risingwavescaleviews
+  - risingwaveusers
   verbs:
   - create
   - delete
@@ -98,6 +100,7 @@ rules:
   - risingwave.risingwavelabs.com
   resources:
   - risingwaves/finalizers
+  - risingwaveusers/finalizers
   verbs:
   - update
 - apiGroups:
@@ -105,6 +108,7 @@ rules:
   resources:
   - risingwaves/status
   - risingwavescaleviews/status
+  - risingwaveusers/status
   verbs:
   - get
   - patch

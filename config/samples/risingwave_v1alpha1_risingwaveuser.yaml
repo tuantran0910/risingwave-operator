@@ -1,0 +1,173 @@
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: example-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  permissions:
+    - CREATEDB
+  privileges:
+    databases:
+      - name: dev
+        privileges: [CONNECT, CREATE]
+        schemas:
+          - name: public
+            privileges: [USAGE, CREATE]
+            tables:
+              - name: "orders"
+                privileges: [SELECT, INSERT]
+              - name: "customers"
+                privileges: [SELECT, UPDATE]
+            views:
+              - name: "order_summary"
+                privileges: [SELECT]
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: analytics-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  permissions:
+    - CREATEDB  # Allow creating databases for analysis
+  privileges:
+    databases:
+      - name: analytics
+        privileges: [CONNECT, CREATE]
+        schemas:
+          - name: public
+            privileges: [USAGE, CREATE]
+            tables:
+              - name: "events"
+                privileges: [SELECT, INSERT, UPDATE, DELETE]
+              - name: "metrics"
+                privileges: [SELECT]
+            materializedViews:
+              - name: "daily_summary"
+                privileges: [SELECT]
+            sources:
+              - name: "kafka_source"
+                privileges: [SELECT]
+            sinks:
+              - name: "elasticsearch_sink"
+                privileges: [SELECT]
+            connections:
+              - name: "kafka_conn"
+                privileges: [USAGE]
+            secrets:
+              - name: "api_keys"
+                privileges: [USAGE]
+            functions:
+              - name: "process_data"
+                privileges: [EXECUTE]
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: ingestion-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  privileges:
+    databases:
+      - name: production
+        privileges: [CONNECT, CREATE]
+        schemas:
+          - name: ingestion
+            privileges: [USAGE, CREATE]
+            tables:
+              - name: "*"
+                privileges: [INSERT, UPDATE, DELETE]
+            sources:
+              - name: "*"
+                privileges: [SELECT]
+            sinks:
+              - name: "*"
+                privileges: [SELECT]
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: oauth-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  auth:
+    type: oauth
+    oauth:
+      jwksUrl: "https://auth.example.com/.well-known/jwks.json"
+      issuer: "risingwave"
+      audience:
+        - "risingwave"
+  privileges:
+    databases:
+      - name: dev
+        privileges: [CONNECT]
+
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: ldap-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  auth:
+    type: ldap
+    ldap:
+      host: "ldap.example.com"
+      port: 389
+      baseDN: "dc=example,dc=com"
+      useSSL: false
+      insecureSkipVerify: false
+  privileges:
+    databases:
+      - name: dev
+        privileges: [CONNECT]
+
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: my-risingwave-user  # Kubernetes resource name
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  name: "my_db_user"  # Actual username in RisingWave
+  privileges:
+    databases:
+      - name: dev
+        schemas:
+          - name: public
+            tables:
+              - name: "orders"
+                privileges: [SELECT, INSERT]
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: developer-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  permissions:
+    - CREATEDB
+    - NOSUPERUSER
+  privileges:
+    databases:
+      - name: dev
+        privileges: [CONNECT, CREATE]
+        schemas:
+          - name: public
+            privileges: [USAGE, CREATE]
+            tables:
+              - name: "projects"
+                privileges: [SELECT, INSERT, UPDATE, DELETE, TRIGGER]
+            functions:
+              - name: "helper_functions"
+                privileges: [EXECUTE]
+            connections:
+              - name: "db_connections"
+                privileges: [USAGE]

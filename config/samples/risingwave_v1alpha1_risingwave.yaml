@@ -3,4 +3,3 @@ kind: RisingWave
 metadata:
   name: risingwave-sample
 spec:
-  # TODO(user): Add fields here

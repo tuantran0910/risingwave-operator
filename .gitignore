@@ -37,3 +37,6 @@ vendor/
 # Own stack
 .stack
 launch.json
+
+# Claude Code
+settings.local.json

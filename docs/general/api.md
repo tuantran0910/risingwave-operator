@@ -19,6 +19,93 @@ toc: true
 <h2 id="risingwave.risingwavelabs.com/v1alpha1">risingwave.risingwavelabs.com/v1alpha1</h2>
 Resource Types:
 <ul></ul>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.AuthConfig">AuthConfig
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserSpec">RisingWaveUserSpec</a>)
+</p>
+<div>
+<p>AuthConfig defines authentication method configuration.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>type</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.AuthType">
+AuthType
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Type of authentication. Valid values are &ldquo;password&rdquo;, &ldquo;oauth&rdquo;, &ldquo;ldap&rdquo;.
+Defaults to &ldquo;password&rdquo; if not specified.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>oauth</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.OAuthConfig">
+OAuthConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>OAuth authentication configuration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>ldap</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.LDAPConfig">
+LDAPConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LDAP authentication configuration.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.AuthType">AuthType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.AuthConfig">AuthConfig</a>)
+</p>
+<div>
+<p>AuthType represents the authentication type.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ldap&#34;</p></td>
+<td><p>AuthTypeLDAP uses LDAP authentication.</p>
+</td>
+</tr><tr><td><p>&#34;oauth&#34;</p></td>
+<td><p>AuthTypeOAuth uses OAuth/JWT authentication.</p>
+</td>
+</tr><tr><td><p>&#34;password&#34;</p></td>
+<td><p>AuthTypePassword uses password authentication (default).</p>
+</td>
+</tr></tbody>
+</table>
 <h3 id="risingwave.risingwavelabs.com/v1alpha1.ComponentGroupReplicasStatus">ComponentGroupReplicasStatus
 </h3>
 <p>
@@ -134,6 +221,950 @@ int32
 </tr>
 </tbody>
 </table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.ConnectionPrivilegeType">ConnectionPrivilegeType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedConnectionPrivilege">NestedConnectionPrivilege</a>)
+</p>
+<div>
+<p>ConnectionPrivilegeType represents connection privilege types.
+Privilege value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ALL&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;USAGE&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.ConnectionStatus">ConnectionStatus
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserStatus">RisingWaveUserStatus</a>)
+</p>
+<div>
+<p>ConnectionStatus represents the connection status to RisingWave.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>connected</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Connected indicates whether a connection could be established.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>lastConnectedTime</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#time-v1-meta">
+Kubernetes meta/v1.Time
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LastConnectedTime is the last time a successful connection was made.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>errorMessage</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ErrorMessage contains the last connection error if any.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.DatabasePrivilege">DatabasePrivilege
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.PrivilegeSpec">PrivilegeSpec</a>)
+</p>
+<div>
+<p>DatabasePrivilege defines privileges on a database and its nested objects.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Database name. Use &ldquo;*&rdquo; for all databases is not supported - use specific database names.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.DatabasePrivilegeType">
+[]DatabasePrivilegeType
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Privileges to grant. Valid values are CONNECT, CREATE, ALL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>withGrantOption</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Grant option allows the grantee to grant these privileges to others.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>schemas</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">
+[]NestedSchemaPrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Nested schema-level privileges within this database.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.DatabasePrivilegeType">DatabasePrivilegeType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.DatabasePrivilege">DatabasePrivilege</a>)
+</p>
+<div>
+<p>DatabasePrivilegeType represents database privilege types.
+Privilege value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ALL&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;CONNECT&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;CREATE&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.FunctionPrivilegeType">FunctionPrivilegeType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedFunctionPrivilege">NestedFunctionPrivilege</a>)
+</p>
+<div>
+<p>FunctionPrivilegeType represents function privilege types.
+Privilege value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ALL&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;EXECUTE&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.LDAPConfig">LDAPConfig
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.AuthConfig">AuthConfig</a>)
+</p>
+<div>
+<p>LDAPConfig defines LDAP authentication configuration.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>host</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>LDAP server host.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>port</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>LDAP server port.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>baseDN</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Base DN for LDAP searches.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>useSSL</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Use SSL/TLS for LDAP connections.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>insecureSkipVerify</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Skip TLS certificate verification.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.MaterializedViewPrivilegeType">MaterializedViewPrivilegeType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedMaterializedViewPrivilege">NestedMaterializedViewPrivilege</a>)
+</p>
+<div>
+<p>MaterializedViewPrivilegeType represents materialized view privilege types.
+Privilege value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ALL&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;SELECT&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.NestedConnectionPrivilege">NestedConnectionPrivilege
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">NestedSchemaPrivilege</a>)
+</p>
+<div>
+<p>NestedConnectionPrivilege defines privileges on a connection within a schema.
+The database and schema names are inherited from parent levels.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Connection name. Use &ldquo;*&rdquo; for all connections in the schema.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.ConnectionPrivilegeType">
+[]ConnectionPrivilegeType
+</a>
+</em>
+</td>
+<td>
+<p>Privileges to grant. Valid values are USAGE, ALL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>withGrantOption</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Grant option allows the grantee to grant these privileges to others.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.NestedFunctionPrivilege">NestedFunctionPrivilege
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">NestedSchemaPrivilege</a>)
+</p>
+<div>
+<p>NestedFunctionPrivilege defines privileges on a function within a schema.
+The database and schema names are inherited from parent levels.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Function name. Use &ldquo;*&rdquo; for all functions in the schema.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.FunctionPrivilegeType">
+[]FunctionPrivilegeType
+</a>
+</em>
+</td>
+<td>
+<p>Privileges to grant. Valid values are EXECUTE, ALL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>withGrantOption</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Grant option allows the grantee to grant these privileges to others.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.NestedMaterializedViewPrivilege">NestedMaterializedViewPrivilege
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">NestedSchemaPrivilege</a>)
+</p>
+<div>
+<p>NestedMaterializedViewPrivilege defines privileges on a materialized view within a schema.
+The database and schema names are inherited from parent levels.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Materialized view name. Use &ldquo;*&rdquo; for all materialized views in the schema.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.MaterializedViewPrivilegeType">
+[]MaterializedViewPrivilegeType
+</a>
+</em>
+</td>
+<td>
+<p>Privileges to grant. Valid values are SELECT, ALL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>withGrantOption</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Grant option allows the grantee to grant these privileges to others.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">NestedSchemaPrivilege
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.DatabasePrivilege">DatabasePrivilege</a>)
+</p>
+<div>
+<p>NestedSchemaPrivilege defines privileges on a schema within a database.
+The database name is inherited from the parent DatabasePrivilege.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Schema name. Use &ldquo;*&rdquo; for all schemas in the database is not supported.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.SchemaPrivilegeType">
+[]SchemaPrivilegeType
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Privileges to grant. Valid values are USAGE, CREATE, ALL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>withGrantOption</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Grant option allows the grantee to grant these privileges to others.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>tables</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.NestedTablePrivilege">
+[]NestedTablePrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Nested object privileges within this schema.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>views</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.NestedViewPrivilege">
+[]NestedViewPrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>materializedViews</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.NestedMaterializedViewPrivilege">
+[]NestedMaterializedViewPrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>sources</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSourcePrivilege">
+[]NestedSourcePrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>sinks</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSinkPrivilege">
+[]NestedSinkPrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>connections</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.NestedConnectionPrivilege">
+[]NestedConnectionPrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>secrets</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSecretPrivilege">
+[]NestedSecretPrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+<tr>
+<td>
+<code>functions</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.NestedFunctionPrivilege">
+[]NestedFunctionPrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.NestedSecretPrivilege">NestedSecretPrivilege
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">NestedSchemaPrivilege</a>)
+</p>
+<div>
+<p>NestedSecretPrivilege defines privileges on a secret within a schema.
+The database and schema names are inherited from parent levels.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Secret name. Use &ldquo;*&rdquo; for all secrets in the schema.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.SecretPrivilegeType">
+[]SecretPrivilegeType
+</a>
+</em>
+</td>
+<td>
+<p>Privileges to grant. Valid values are USAGE, ALL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>withGrantOption</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Grant option allows the grantee to grant these privileges to others.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.NestedSinkPrivilege">NestedSinkPrivilege
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">NestedSchemaPrivilege</a>)
+</p>
+<div>
+<p>NestedSinkPrivilege defines privileges on a sink within a schema.
+The database and schema names are inherited from parent levels.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Sink name. Use &ldquo;*&rdquo; for all sinks in the schema.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.SinkPrivilegeType">
+[]SinkPrivilegeType
+</a>
+</em>
+</td>
+<td>
+<p>Privileges to grant. Valid values are SELECT, ALL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>withGrantOption</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Grant option allows the grantee to grant these privileges to others.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.NestedSourcePrivilege">NestedSourcePrivilege
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">NestedSchemaPrivilege</a>)
+</p>
+<div>
+<p>NestedSourcePrivilege defines privileges on a source within a schema.
+The database and schema names are inherited from parent levels.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Source name. Use &ldquo;*&rdquo; for all sources in the schema.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.SourcePrivilegeType">
+[]SourcePrivilegeType
+</a>
+</em>
+</td>
+<td>
+<p>Privileges to grant. Valid values are SELECT, ALL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>withGrantOption</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Grant option allows the grantee to grant these privileges to others.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.NestedTablePrivilege">NestedTablePrivilege
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">NestedSchemaPrivilege</a>)
+</p>
+<div>
+<p>NestedTablePrivilege defines privileges on a table within a schema.
+The database and schema names are inherited from parent levels.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Table name. Use &ldquo;*&rdquo; for all tables in the schema.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.TablePrivilegeType">
+[]TablePrivilegeType
+</a>
+</em>
+</td>
+<td>
+<p>Privileges to grant. Valid values are SELECT, INSERT, UPDATE, DELETE, TRUNCATE, REFERENCES, TRIGGER, ALL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>withGrantOption</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Grant option allows the grantee to grant these privileges to others.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.NestedViewPrivilege">NestedViewPrivilege
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">NestedSchemaPrivilege</a>)
+</p>
+<div>
+<p>NestedViewPrivilege defines privileges on a view within a schema.
+The database and schema names are inherited from parent levels.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>View name. Use &ldquo;*&rdquo; for all views in the schema.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.ViewPrivilegeType">
+[]ViewPrivilegeType
+</a>
+</em>
+</td>
+<td>
+<p>Privileges to grant. Valid values are SELECT, INSERT, DELETE, UPDATE, TRIGGER, ALL.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>withGrantOption</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Grant option allows the grantee to grant these privileges to others.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.OAuthConfig">OAuthConfig
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.AuthConfig">AuthConfig</a>)
+</p>
+<div>
+<p>OAuthConfig defines OAuth/JWT authentication configuration.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>jwksUrl</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>The JWKS (JSON Web Key Set) URL for verifying JWT tokens.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>issuer</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>The issuer claim to verify in the JWT token.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>audience</code><br/>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>The audience claim to verify in the JWT token.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="risingwave.risingwavelabs.com/v1alpha1.PartialObjectMeta">PartialObjectMeta
 </h3>
 <p>
@@ -171,6 +1202,52 @@ map[string]string
 </td>
 <td>
 <p>Annotations of the object.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.PasswordConfig">PasswordConfig
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserSpec">RisingWaveUserSpec</a>)
+</p>
+<div>
+<p>PasswordConfig defines password configuration for a user.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>secretRef</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.SecretReference">
+SecretReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SecretRef references a secret containing the password.
+The secret must contain a &lsquo;password&rsquo; key.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>generateRandomLength</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Generate a random password with the specified length.
+If not specified and no secretRef is provided, a 16-character password will be generated.</p>
 </td>
 </tr>
 </tbody>
@@ -474,6 +1551,40 @@ waiting for a signal (field value, external system, or other) produced by a
 component responsible for a finalizer later in the list, resulting in a deadlock.
 Without enforced ordering finalizers are free to order amongst themselves and
 are not vulnerable to ordering changes in the list.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.PrivilegeSpec">PrivilegeSpec
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserSpec">RisingWaveUserSpec</a>)
+</p>
+<div>
+<p>PrivilegeSpec defines privilege grants on database objects using hierarchical structure.
+Privileges are nested: databases -&gt; schemas -&gt; objects (tables, views, etc.)
+This allows database and schema context to be specified once at the parent level.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>databases</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.DatabasePrivilege">
+[]DatabasePrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Database-level privileges. Each database can contain nested schema privileges.</p>
 </td>
 </tr>
 </tbody>
@@ -4014,6 +5125,47 @@ This field is alpha-level and is only honored by servers that enable the UserNam
 </tr>
 </tbody>
 </table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.RisingWaveReference">RisingWaveReference
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserSpec">RisingWaveUserSpec</a>)
+</p>
+<div>
+<p>RisingWaveReference contains enough information to locate the referenced RisingWave object.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Name of the RisingWave cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>namespace</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Namespace of the RisingWave cluster. Defaults to the same namespace as the RisingWaveUser.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="risingwave.risingwavelabs.com/v1alpha1.RisingWaveS3Credentials">RisingWaveS3Credentials
 </h3>
 <p>
@@ -5953,6 +7105,604 @@ If the secret name isn&rsquo;t provided, then TLS/SSL won&rsquo;t be enabled.</p
 </td>
 </tr>
 </tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.RisingWaveUser">RisingWaveUser
+</h3>
+<div>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>metadata</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#objectmeta-v1-meta">
+Kubernetes meta/v1.ObjectMeta
+</a>
+</em>
+</td>
+<td>
+Refer to the Kubernetes API documentation for the fields of the
+<code>metadata</code> field.
+</td>
+</tr>
+<tr>
+<td>
+<code>spec</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserSpec">
+RisingWaveUserSpec
+</a>
+</em>
+</td>
+<td>
+<br/>
+<br/>
+<table>
+<tr>
+<td>
+<code>risingWaveRef</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveReference">
+RisingWaveReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to parent RisingWave cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>User name in RisingWave. Defaults to metadata.name if empty.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>password</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.PasswordConfig">
+PasswordConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Password configuration for the user.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>auth</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.AuthConfig">
+AuthConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Authentication method configuration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>permissions</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.UserPermission">
+[]UserPermission
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>User-level permissions (SUPERUSER, CREATEDB, CREATEUSER).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.PrivilegeSpec">
+PrivilegeSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Privilege grants on database objects.</p>
+</td>
+</tr>
+</table>
+</td>
+</tr>
+<tr>
+<td>
+<code>status</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserStatus">
+RisingWaveUserStatus
+</a>
+</em>
+</td>
+<td>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserConditionType">RisingWaveUserConditionType
+(<code>string</code> alias)</h3>
+<div>
+<p>RisingWaveUserConditionType defines the condition types for RisingWaveUser.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ConnectionError&#34;</p></td>
+<td><p>RisingWaveUserConditionConnectionError indicates a connection error.</p>
+</td>
+</tr><tr><td><p>&#34;PrivilegesSynced&#34;</p></td>
+<td><p>RisingWaveUserConditionPrivilegesSynced indicates privileges have been synced.</p>
+</td>
+</tr><tr><td><p>&#34;Ready&#34;</p></td>
+<td><p>RisingWaveUserConditionReady indicates the user is ready.</p>
+</td>
+</tr><tr><td><p>&#34;SecretCreated&#34;</p></td>
+<td><p>RisingWaveUserConditionSecretCreated indicates the secret has been created.</p>
+</td>
+</tr><tr><td><p>&#34;UserCreated&#34;</p></td>
+<td><p>RisingWaveUserConditionUserCreated indicates the user has been created.</p>
+</td>
+</tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserSpec">RisingWaveUserSpec
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUser">RisingWaveUser</a>)
+</p>
+<div>
+<p>RisingWaveUserSpec defines the desired state of RisingWaveUser.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>risingWaveRef</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveReference">
+RisingWaveReference
+</a>
+</em>
+</td>
+<td>
+<p>Reference to parent RisingWave cluster.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>User name in RisingWave. Defaults to metadata.name if empty.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>password</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.PasswordConfig">
+PasswordConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Password configuration for the user.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>auth</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.AuthConfig">
+AuthConfig
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Authentication method configuration.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>permissions</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.UserPermission">
+[]UserPermission
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>User-level permissions (SUPERUSER, CREATEDB, CREATEUSER).</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privileges</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.PrivilegeSpec">
+PrivilegeSpec
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Privilege grants on database objects.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserStatus">RisingWaveUserStatus
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUser">RisingWaveUser</a>)
+</p>
+<div>
+<p>RisingWaveUserStatus defines the observed state of RisingWaveUser.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>conditions</code><br/>
+<em>
+<a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.24/#condition-v1-meta">
+[]Kubernetes meta/v1.Condition
+</a>
+</em>
+</td>
+<td>
+<p>Conditions represent the latest available observations of the RisingWaveUser&rsquo;s current state.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>observedGeneration</code><br/>
+<em>
+int64
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ObservedGeneration is the generation observed by the controller.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>userCreated</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>UserCreated indicates whether the user has been created in RisingWave.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secretCreated</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SecretCreated indicates whether the password secret has been created.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>secretName</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SecretName is the name of the secret containing the user&rsquo;s password.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>privilegesSynced</code><br/>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PrivilegesSynced indicates whether privileges have been synced.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>connectionStatus</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.ConnectionStatus">
+ConnectionStatus
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ConnectionStatus represents the status of the connection to RisingWave.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>phase</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Phase is a high-level summary of where the RisingWaveUser is in its lifecycle.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.SchemaPrivilegeType">SchemaPrivilegeType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSchemaPrivilege">NestedSchemaPrivilege</a>)
+</p>
+<div>
+<p>SchemaPrivilegeType represents schema privilege types.
+Privilege value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ALL&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;CREATE&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;USAGE&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.SecretPrivilegeType">SecretPrivilegeType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSecretPrivilege">NestedSecretPrivilege</a>)
+</p>
+<div>
+<p>SecretPrivilegeType represents secret privilege types.
+Privilege value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ALL&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;USAGE&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.SecretReference">SecretReference
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.PasswordConfig">PasswordConfig</a>)
+</p>
+<div>
+<p>SecretReference references a secret in the same namespace.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Name of the secret.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>namespace</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Namespace of the secret. Defaults to the same namespace as the RisingWaveUser.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>key</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Key in the secret data containing the password. Defaults to &ldquo;password&rdquo;.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.SinkPrivilegeType">SinkPrivilegeType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSinkPrivilege">NestedSinkPrivilege</a>)
+</p>
+<div>
+<p>SinkPrivilegeType represents sink privilege types.
+Privilege value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ALL&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;SELECT&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.SourcePrivilegeType">SourcePrivilegeType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedSourcePrivilege">NestedSourcePrivilege</a>)
+</p>
+<div>
+<p>SourcePrivilegeType represents source privilege types.
+Privilege value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ALL&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;SELECT&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.TablePrivilegeType">TablePrivilegeType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedTablePrivilege">NestedTablePrivilege</a>)
+</p>
+<div>
+<p>TablePrivilegeType represents table privilege types.
+Privilege value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ALL&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;DELETE&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;INSERT&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;REFERENCES&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;SELECT&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;TRIGGER&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;TRUNCATE&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;UPDATE&#34;</p></td>
+<td></td>
+</tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.UserPermission">UserPermission
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserSpec">RisingWaveUserSpec</a>)
+</p>
+<div>
+<p>UserPermission represents user-level permissions.
+Permission value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.ViewPrivilegeType">ViewPrivilegeType
+(<code>string</code> alias)</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.NestedViewPrivilege">NestedViewPrivilege</a>)
+</p>
+<div>
+<p>ViewPrivilegeType represents view privilege types.
+Privilege value validation is delegated to RisingWave during SQL execution.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr><td><p>&#34;ALL&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;DELETE&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;INSERT&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;SELECT&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;TRIGGER&#34;</p></td>
+<td></td>
+</tr><tr><td><p>&#34;UPDATE&#34;</p></td>
+<td></td>
+</tr></tbody>
 </table>
 <h3 id="risingwave.risingwavelabs.com/v1alpha1.WorkloadReplicaStatus">WorkloadReplicaStatus
 </h3>
