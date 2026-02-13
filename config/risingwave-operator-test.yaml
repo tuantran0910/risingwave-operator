@@ -32979,50 +32979,7 @@ spec:
                       Defaults to "password" if not specified.
                     type: string
                 type: object
-              name:
-                description: User name in RisingWave. Defaults to metadata.name if
-                  empty.
-                type: string
-              password:
-                description: Password configuration for the user.
-                properties:
-                  generateRandomLength:
-                    description: |-
-                      Generate a random password with the specified length.
-                      If not specified and no secretRef is provided, a 16-character password will be generated.
-                    format: int32
-                    maximum: 128
-                    minimum: 8
-                    type: integer
-                  secretRef:
-                    description: |-
-                      SecretRef references a secret containing the password.
-                      The secret must contain a 'password' key.
-                    properties:
-                      key:
-                        description: Key in the secret data containing the password.
-                          Defaults to "password".
-                        type: string
-                      name:
-                        description: Name of the secret.
-                        type: string
-                      namespace:
-                        description: Namespace of the secret. Defaults to the same
-                          namespace as the RisingWaveUser.
-                        type: string
-                    required:
-                    - name
-                    type: object
-                type: object
-              permissions:
-                description: User-level permissions (SUPERUSER, CREATEDB, CREATEUSER).
-                items:
-                  description: |-
-                    UserPermission represents user-level permissions.
-                    Permission value validation is delegated to RisingWave during SQL execution.
-                  type: string
-                type: array
-              privileges:
+              grants:
                 description: Privilege grants on database objects.
                 properties:
                   databases:
@@ -33311,6 +33268,49 @@ spec:
                       type: object
                     type: array
                 type: object
+              name:
+                description: User name in RisingWave. Defaults to metadata.name if
+                  empty.
+                type: string
+              password:
+                description: Password configuration for the user.
+                properties:
+                  generateRandomLength:
+                    description: |-
+                      Generate a random password with the specified length.
+                      If not specified and no secretRef is provided, a 16-character password will be generated.
+                    format: int32
+                    maximum: 128
+                    minimum: 8
+                    type: integer
+                  secretRef:
+                    description: |-
+                      SecretRef references a secret containing the password.
+                      The secret must contain a 'password' key.
+                    properties:
+                      key:
+                        description: Key in the secret data containing the password.
+                          Defaults to "password".
+                        type: string
+                      name:
+                        description: Name of the secret.
+                        type: string
+                      namespace:
+                        description: Namespace of the secret. Defaults to the same
+                          namespace as the RisingWaveUser.
+                        type: string
+                    required:
+                    - name
+                    type: object
+                type: object
+              permissions:
+                description: User-level permissions (SUPERUSER, CREATEDB, CREATEUSER).
+                items:
+                  description: |-
+                    UserPermission represents user-level permissions.
+                    Permission value validation is delegated to RisingWave during SQL execution.
+                  type: string
+                type: array
               risingWaveRef:
                 description: Reference to parent RisingWave cluster.
                 properties:

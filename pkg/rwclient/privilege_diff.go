@@ -18,6 +18,7 @@ package rwclient
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	risingwavev1alpha1 "github.com/risingwavelabs/risingwave-operator/apis/risingwave/v1alpha1"
@@ -120,7 +121,7 @@ func CalculateSchemaDiff(userName string, actual SchemaPrivilegeSnapshot, desire
 }
 
 // CalculateObjectDiff calculates the diff for object-level privileges (Tables, Views, MVs, etc.).
-func CalculateObjectDiff(userName string, objectType string, actual ObjectPrivilege, desiredName string, desiredPrivs []string) PrivilegeDiff {
+func CalculateObjectDiff(userName string, schemaName string, objectType string, actual ObjectPrivilege, desiredName string, desiredPrivs []string) PrivilegeDiff {
 	var diff PrivilegeDiff
 
 	dPrivs := make(map[string]bool)
@@ -133,6 +134,18 @@ func CalculateObjectDiff(userName string, objectType string, actual ObjectPrivil
 		aPrivs[p] = true
 	}
 
+	// Helper to build ON clause
+	buildOnClause := func(targetName string) string {
+		if targetName == "*" {
+			pluralType := objectType + "S"
+			if objectType == "MATERIALIZED VIEW" {
+				pluralType = "MATERIALIZED VIEWS"
+			}
+			return fmt.Sprintf("ON ALL %s IN SCHEMA %s", pluralType, QuoteIdentifier(schemaName))
+		}
+		return fmt.Sprintf("ON %s %s", objectType, QuoteIdentifier(targetName))
+	}
+
 	// GRANT
 	var grantPrivs []string
 	for p := range dPrivs {
@@ -141,10 +154,10 @@ func CalculateObjectDiff(userName string, objectType string, actual ObjectPrivil
 		}
 	}
 	if len(grantPrivs) > 0 {
-		diff.ToGrant = append(diff.ToGrant, fmt.Sprintf("GRANT %s ON %s %s TO %s",
+		sort.Strings(grantPrivs)
+		diff.ToGrant = append(diff.ToGrant, fmt.Sprintf("GRANT %s %s TO %s",
 			strings.Join(grantPrivs, ", "),
-			objectType,
-			QuoteIdentifier(desiredName),
+			buildOnClause(desiredName),
 			QuoteUser(userName)))
 	}
 
@@ -156,10 +169,10 @@ func CalculateObjectDiff(userName string, objectType string, actual ObjectPrivil
 		}
 	}
 	if len(revokePrivs) > 0 {
-		diff.ToRevoke = append(diff.ToRevoke, fmt.Sprintf("REVOKE %s ON %s %s FROM %s",
+		sort.Strings(revokePrivs)
+		diff.ToRevoke = append(diff.ToRevoke, fmt.Sprintf("REVOKE %s %s FROM %s",
 			strings.Join(revokePrivs, ", "),
-			objectType,
-			QuoteIdentifier(desiredName),
+			buildOnClause(desiredName),
 			QuoteUser(userName)))
 	}
 

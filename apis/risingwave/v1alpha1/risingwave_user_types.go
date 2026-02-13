@@ -44,7 +44,7 @@ type RisingWaveUserSpec struct {
 
 	// Privilege grants on database objects.
 	// +optional
-	Privileges *PrivilegeSpec `json:"privileges,omitempty"`
+	Grants *GrantSpec `json:"grants,omitempty"`
 }
 
 // RisingWaveReference contains enough information to locate the referenced RisingWave object.
@@ -164,10 +164,10 @@ type LDAPConfig struct {
 // Permission value validation is delegated to RisingWave during SQL execution.
 type UserPermission string
 
-// PrivilegeSpec defines privilege grants on database objects using hierarchical structure.
-// Privileges are nested: databases -> schemas -> objects (tables, views, etc.)
+// GrantSpec defines privilege grants on database objects using hierarchical structure.
+// Grants are nested: databases -> schemas -> objects (tables, views, etc.)
 // This allows database and schema context to be specified once at the parent level.
-type PrivilegeSpec struct {
+type GrantSpec struct {
 	// Database-level privileges. Each database can contain nested schema privileges.
 	// +optional
 	Databases []DatabasePrivilege `json:"databases,omitempty"`

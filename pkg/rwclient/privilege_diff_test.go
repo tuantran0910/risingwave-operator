@@ -18,6 +18,7 @@ package rwclient
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 
 	risingwavev1alpha1 "github.com/risingwavelabs/risingwave-operator/apis/risingwave/v1alpha1"
@@ -80,34 +81,91 @@ func TestCalculateDatabaseDiff(t *testing.T) {
 }
 
 func TestCalculateObjectDiff(t *testing.T) {
-	userName := "test-user"
 	tests := []struct {
 		name         string
+		userName     string
+		schemaName   string
 		objectType   string
 		actual       ObjectPrivilege
 		desiredName  string
 		desiredPrivs []string
-		want         PrivilegeDiff
+		expected     PrivilegeDiff
 	}{
 		{
-			name:       "revoke select",
+			name:       "grant new privileges",
+			userName:   "testuser",
+			schemaName: "public",
 			objectType: "TABLE",
 			actual: ObjectPrivilege{
-				Name:       "tab",
+				Name:       "t1",
+				Privileges: []string{},
+			},
+			desiredName:  "t1",
+			desiredPrivs: []string{"SELECT", "INSERT"},
+			expected: PrivilegeDiff{
+				ToGrant: []string{`GRANT INSERT, SELECT ON TABLE "t1" TO "testuser"`},
+			},
+		},
+		{
+			name:       "revoke removed privileges",
+			userName:   "testuser",
+			schemaName: "public",
+			objectType: "TABLE",
+			actual: ObjectPrivilege{
+				Name:       "t1",
+				Privileges: []string{"SELECT", "INSERT", "UPDATE"},
+			},
+			desiredName:  "t1",
+			desiredPrivs: []string{"SELECT"},
+			expected: PrivilegeDiff{
+				ToRevoke: []string{`REVOKE INSERT, UPDATE ON TABLE "t1" FROM "testuser"`},
+			},
+		},
+		{
+			name:       "mix grant and revoke",
+			userName:   "testuser",
+			schemaName: "public",
+			objectType: "TABLE",
+			actual: ObjectPrivilege{
+				Name:       "t1",
 				Privileges: []string{"SELECT", "INSERT"},
 			},
-			desiredName:  "tab",
-			desiredPrivs: []string{"INSERT"},
-			want: PrivilegeDiff{
-				ToRevoke: []string{"REVOKE SELECT ON TABLE \"tab\" FROM \"test-user\""},
+			desiredName:  "t1",
+			desiredPrivs: []string{"SELECT", "UPDATE"},
+			expected: PrivilegeDiff{
+				ToGrant:  []string{`GRANT UPDATE ON TABLE "t1" TO "testuser"`},
+				ToRevoke: []string{`REVOKE INSERT ON TABLE "t1" FROM "testuser"`},
+			},
+		},
+		{
+			name:       "wildcard table grant",
+			userName:   "testuser",
+			schemaName: "public",
+			objectType: "TABLE",
+			actual: ObjectPrivilege{
+				Name:       "*",
+				Privileges: []string{},
+			},
+			desiredName:  "*",
+			desiredPrivs: []string{"SELECT"},
+			expected: PrivilegeDiff{
+				ToGrant: []string{`GRANT SELECT ON ALL TABLES IN SCHEMA "public" TO "testuser"`},
 			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := CalculateObjectDiff(userName, tt.objectType, tt.actual, tt.desiredName, tt.desiredPrivs); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("CalculateObjectDiff() = %v, want %v", got, tt.want)
+			got := CalculateObjectDiff(tt.userName, tt.schemaName, tt.objectType, tt.actual, tt.desiredName, tt.desiredPrivs)
+
+			// Sort slices for comparison
+			sort.Strings(got.ToGrant)
+			sort.Strings(tt.expected.ToGrant)
+			sort.Strings(got.ToRevoke)
+			sort.Strings(tt.expected.ToRevoke)
+
+			if !reflect.DeepEqual(got, tt.expected) {
+				t.Errorf("CalculateObjectDiff() = %v, want %v", got, tt.expected)
 			}
 		})
 	}

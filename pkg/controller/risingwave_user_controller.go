@@ -586,8 +586,8 @@ func (r *RisingWaveUserReconciler) applyPrivileges(ctx context.Context) error {
 		relevantDatabases[dbName] = true
 	}
 	// Also ensure databases in spec are included (though they should be in allSystemDBs if they exist)
-	if r.rwUser.Spec.Privileges != nil {
-		for _, dbPriv := range r.rwUser.Spec.Privileges.Databases {
+	if r.rwUser.Spec.Grants != nil {
+		for _, dbPriv := range r.rwUser.Spec.Grants.Databases {
 			relevantDatabases[dbPriv.Name] = true
 		}
 	}
@@ -619,10 +619,10 @@ func (r *RisingWaveUserReconciler) applyPrivileges(ctx context.Context) error {
 		}
 
 		var desiredDB *risingwavev1alpha1.DatabasePrivilege
-		if r.rwUser.Spec.Privileges != nil {
-			for i := range r.rwUser.Spec.Privileges.Databases {
-				if r.rwUser.Spec.Privileges.Databases[i].Name == dbName {
-					desiredDB = &r.rwUser.Spec.Privileges.Databases[i]
+		if r.rwUser.Spec.Grants != nil {
+			for i := range r.rwUser.Spec.Grants.Databases {
+				if r.rwUser.Spec.Grants.Databases[i].Name == dbName {
+					desiredDB = &r.rwUser.Spec.Grants.Databases[i]
 					break
 				}
 			}
@@ -659,8 +659,8 @@ func (r *RisingWaveUserReconciler) applyPrivileges(ctx context.Context) error {
 		}
 
 		var desiredSchemas []risingwavev1alpha1.NestedSchemaPrivilege
-		if r.rwUser.Spec.Privileges != nil {
-			for _, dbPriv := range r.rwUser.Spec.Privileges.Databases {
+		if r.rwUser.Spec.Grants != nil {
+			for _, dbPriv := range r.rwUser.Spec.Grants.Databases {
 				if dbPriv.Name == dbName {
 					desiredSchemas = dbPriv.Schemas
 					break
@@ -699,10 +699,10 @@ func (r *RisingWaveUserReconciler) applyPrivileges(ctx context.Context) error {
 					dbStats.toRevoke = append(dbStats.toRevoke, fmt.Sprintf("REVOKE ALL ON SCHEMA %s FROM %s",
 						rwclient.QuoteIdentifier(sName), rwclient.QuoteUser(userName)))
 				}
-				r.reconcileObjectPrivileges(userName, "TABLE", actualS.Tables, nil, &dbStats.toGrant, &dbStats.toRevoke)
-				r.reconcileObjectPrivileges(userName, "VIEW", actualS.Views, nil, &dbStats.toGrant, &dbStats.toRevoke)
-				r.reconcileObjectPrivileges(userName, "MATERIALIZED VIEW", actualS.MaterializedViews, nil, &dbStats.toGrant, &dbStats.toRevoke)
-				r.reconcileObjectPrivileges(userName, "SOURCE", actualS.Sources, nil, &dbStats.toGrant, &dbStats.toRevoke)
+				r.reconcileObjectPrivileges(userName, sName, "TABLE", actualS.Tables, nil, &dbStats.toGrant, &dbStats.toRevoke)
+				r.reconcileObjectPrivileges(userName, sName, "VIEW", actualS.Views, nil, &dbStats.toGrant, &dbStats.toRevoke)
+				r.reconcileObjectPrivileges(userName, sName, "MATERIALIZED VIEW", actualS.MaterializedViews, nil, &dbStats.toGrant, &dbStats.toRevoke)
+				r.reconcileObjectPrivileges(userName, sName, "SOURCE", actualS.Sources, nil, &dbStats.toGrant, &dbStats.toRevoke)
 				continue
 			}
 
@@ -710,10 +710,10 @@ func (r *RisingWaveUserReconciler) applyPrivileges(ctx context.Context) error {
 			dbStats.toGrant = append(dbStats.toGrant, diff.ToGrant...)
 			dbStats.toRevoke = append(dbStats.toRevoke, diff.ToRevoke...)
 
-			r.reconcileObjectPrivileges(userName, "TABLE", actualS.Tables, desiredS.Tables, &dbStats.toGrant, &dbStats.toRevoke)
-			r.reconcileObjectPrivileges(userName, "VIEW", actualS.Views, r.toViewPrivs(desiredS.Views), &dbStats.toGrant, &dbStats.toRevoke)
-			r.reconcileObjectPrivileges(userName, "MATERIALIZED VIEW", actualS.MaterializedViews, r.toMVPrivs(desiredS.MaterializedViews), &dbStats.toGrant, &dbStats.toRevoke)
-			r.reconcileObjectPrivileges(userName, "SOURCE", actualS.Sources, r.toSourcePrivs(desiredS.Sources), &dbStats.toGrant, &dbStats.toRevoke)
+			r.reconcileObjectPrivileges(userName, sName, "TABLE", actualS.Tables, desiredS.Tables, &dbStats.toGrant, &dbStats.toRevoke)
+			r.reconcileObjectPrivileges(userName, sName, "VIEW", actualS.Views, r.toViewPrivs(desiredS.Views), &dbStats.toGrant, &dbStats.toRevoke)
+			r.reconcileObjectPrivileges(userName, sName, "MATERIALIZED VIEW", actualS.MaterializedViews, r.toMVPrivs(desiredS.MaterializedViews), &dbStats.toGrant, &dbStats.toRevoke)
+			r.reconcileObjectPrivileges(userName, sName, "SOURCE", actualS.Sources, r.toSourcePrivs(desiredS.Sources), &dbStats.toGrant, &dbStats.toRevoke)
 		}
 	}
 
@@ -802,7 +802,7 @@ func (r *RisingWaveUserReconciler) getAllDatabases(ctx context.Context) ([]strin
 	return results, nil
 }
 
-func (r *RisingWaveUserReconciler) reconcileObjectPrivileges(userName, objectType string, actual []rwclient.ObjectPrivilege, desired []risingwavev1alpha1.NestedTablePrivilege, toGrant, toRevoke *[]string) {
+func (r *RisingWaveUserReconciler) reconcileObjectPrivileges(userName, schemaName, objectType string, actual []rwclient.ObjectPrivilege, desired []risingwavev1alpha1.NestedTablePrivilege, toGrant, toRevoke *[]string) {
 	// Map all objects
 	allObjects := make(map[string]bool)
 	for _, o := range actual {
@@ -840,7 +840,7 @@ func (r *RisingWaveUserReconciler) reconcileObjectPrivileges(userName, objectTyp
 			dPrivs = append(dPrivs, string(p))
 		}
 
-		diff := rwclient.CalculateObjectDiff(userName, objectType, actualO, oName, dPrivs)
+		diff := rwclient.CalculateObjectDiff(userName, schemaName, objectType, actualO, oName, dPrivs)
 		*toGrant = append(*toGrant, diff.ToGrant...)
 		*toRevoke = append(*toRevoke, diff.ToRevoke...)
 	}

@@ -538,7 +538,7 @@ func TestRisingWaveUserController_grantPrivileges(t *testing.T) {
 			name: "single database - no switch needed",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -563,7 +563,7 @@ func TestRisingWaveUserController_grantPrivileges(t *testing.T) {
 			name: "database-level privileges - no database switch",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name:       "dev",
@@ -578,7 +578,7 @@ func TestRisingWaveUserController_grantPrivileges(t *testing.T) {
 			name: "multiple databases - switches required",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -617,7 +617,7 @@ func TestRisingWaveUserController_grantPrivileges(t *testing.T) {
 			name: "mixed database-level and object-level privileges",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name:       "dev",
@@ -643,7 +643,7 @@ func TestRisingWaveUserController_grantPrivileges(t *testing.T) {
 			name: "all privilege types across databases",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name:       "dev",
@@ -690,16 +690,16 @@ func TestRisingWaveUserController_grantPrivileges(t *testing.T) {
 		{
 			name: "nil privileges - no execution",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
-				Name:       "testuser",
-				Privileges: nil,
+				Name:   "testuser",
+				Grants: nil,
 			},
 			expectedExecutions: 0,
 		},
 		{
 			name: "empty privileges - no execution",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
-				Name:       "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{},
+				Name:   "testuser",
+				Grants: &risingwavev1alpha1.GrantSpec{},
 			},
 			expectedExecutions: 0,
 		},
@@ -720,8 +720,8 @@ func TestRisingWaveUserController_grantPrivileges(t *testing.T) {
 
 			// Verify the spec is properly set
 			assert.Equal(t, tt.spec.Name, r.rwUser.Spec.Name)
-			if tt.spec.Privileges != nil {
-				assert.NotNil(t, r.rwUser.Spec.Privileges)
+			if tt.spec.Grants != nil {
+				assert.NotNil(t, r.rwUser.Spec.Grants)
 			}
 		})
 	}
@@ -739,7 +739,7 @@ func TestRisingWaveUserController_revokePrivileges(t *testing.T) {
 			name: "single database table revoke",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -764,7 +764,7 @@ func TestRisingWaveUserController_revokePrivileges(t *testing.T) {
 			name: "multiple databases revoke",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -803,7 +803,7 @@ func TestRisingWaveUserController_revokePrivileges(t *testing.T) {
 			name: "all privilege types revoke",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name:       "dev",
@@ -841,8 +841,8 @@ func TestRisingWaveUserController_revokePrivileges(t *testing.T) {
 
 			// Verify the spec is properly set
 			assert.Equal(t, tt.spec.Name, r.rwUser.Spec.Name)
-			if tt.spec.Privileges != nil {
-				assert.NotNil(t, r.rwUser.Spec.Privileges)
+			if tt.spec.Grants != nil {
+				assert.NotNil(t, r.rwUser.Spec.Grants)
 			}
 		})
 	}

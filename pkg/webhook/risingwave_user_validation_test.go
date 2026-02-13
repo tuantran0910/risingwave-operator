@@ -771,7 +771,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 					Name: "test-rw",
 				},
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -804,7 +804,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 					Name: "test-rw",
 				},
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Privileges: []risingwavev1alpha1.DatabasePrivilegeType{
@@ -836,7 +836,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 					Name: "test-rw",
 				},
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -866,7 +866,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 					Name: "test-rw",
 				},
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "*",
@@ -896,7 +896,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 					Name: "test-rw",
 				},
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -944,7 +944,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 					Name: "test-rw",
 				},
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -981,7 +981,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 					Name: "test-rw",
 				},
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -1016,7 +1016,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 					Name: "test-rw",
 				},
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -1059,7 +1059,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 					Name: "test-rw",
 				},
 				Name: "testuser",
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",

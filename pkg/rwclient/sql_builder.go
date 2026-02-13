@@ -105,16 +105,16 @@ func BuildCreateUserWithLDAPSQL(userName string, ldap *risingwavev1alpha1.LDAPCo
 	return sb.String()
 }
 
-// BuildGrantStatements builds GRANT statements for all privileges in spec.
+// BuildGrantStatements builds GRANT statements for all grants in spec.
 func BuildGrantStatements(userName string, spec *risingwavev1alpha1.RisingWaveUserSpec) []string {
 	var statements []string
 
-	if spec.Privileges == nil {
+	if spec.Grants == nil {
 		return statements
 	}
 
 	// Process hierarchical structure (DatabasePrivilege with nested Schemas)
-	for _, dbPriv := range spec.Privileges.Databases {
+	for _, dbPriv := range spec.Grants.Databases {
 		statements = append(statements, buildDatabasePrivilegesHierarchical(userName, &dbPriv)...)
 	}
 
@@ -204,12 +204,12 @@ type DatabaseGroupedStatements struct {
 func BuildGrantStatementsByDatabase(userName string, spec *risingwavev1alpha1.RisingWaveUserSpec) []DatabaseGroupedStatements {
 	var grouped []DatabaseGroupedStatements
 
-	if spec.Privileges == nil {
+	if spec.Grants == nil {
 		return grouped
 	}
 
 	// Process hierarchical structure
-	for _, dbPriv := range spec.Privileges.Databases {
+	for _, dbPriv := range spec.Grants.Databases {
 		grouped = append(grouped, buildDatabasePrivilegesHierarchicalGrouped(userName, &dbPriv)...)
 	}
 
@@ -326,16 +326,16 @@ func buildSchemaPrivilegesHierarchicalGrouped(userName string, database string, 
 	return grouped
 }
 
-// BuildRevokeStatements builds REVOKE statements for all privileges.
+// BuildRevokeStatements builds REVOKE statements for all grants.
 func BuildRevokeStatements(userName string, spec *risingwavev1alpha1.RisingWaveUserSpec) []string {
 	var statements []string
 
-	if spec.Privileges == nil {
+	if spec.Grants == nil {
 		return statements
 	}
 
 	// Process hierarchical structure
-	for _, dbPriv := range spec.Privileges.Databases {
+	for _, dbPriv := range spec.Grants.Databases {
 		stmt := buildRevokeDatabasePrivilege(userName, &dbPriv)
 		statements = append(statements, stmt)
 

@@ -177,7 +177,7 @@ func (w *RisingWaveUserValidatingWebhook) validateObject(ctx context.Context, ob
 	fieldErrs = append(fieldErrs, w.validateAuthConfig(obj, specPath)...)
 
 	// Validate privileges (structural only - value validation delegated to RisingWave)
-	if obj.Spec.Privileges != nil {
+	if obj.Spec.Grants != nil {
 		fieldErrs = append(fieldErrs, w.validatePrivileges(obj, specPath)...)
 	}
 
@@ -302,7 +302,7 @@ func (w *RisingWaveUserValidatingWebhook) validateAuthConfig(obj *risingwavev1al
 // Performs structural validation only (required fields, names, wildcard restrictions).
 // Privilege value validation is delegated to RisingWave during SQL execution.
 func (w *RisingWaveUserValidatingWebhook) validatePrivileges(obj *risingwavev1alpha1.RisingWaveUser, specPath *field.Path) field.ErrorList {
-	if obj.Spec.Privileges == nil {
+	if obj.Spec.Grants == nil {
 		return nil
 	}
 
@@ -310,7 +310,7 @@ func (w *RisingWaveUserValidatingWebhook) validatePrivileges(obj *risingwavev1al
 	privPath := specPath.Child("privileges")
 
 	// Validate hierarchical database privileges
-	for i, dbPriv := range obj.Spec.Privileges.Databases {
+	for i, dbPriv := range obj.Spec.Grants.Databases {
 		p := privPath.Child("databases").Index(i)
 		if dbPriv.Name == "" {
 			fieldErrs = append(fieldErrs, field.Required(p.Child("name"), "database name is required"))

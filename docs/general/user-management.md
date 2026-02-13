@@ -138,7 +138,7 @@ The operator will:
 
 ## Privilege Grants
 
-The `privileges` section allows fine-grained access control on database objects using a **hierarchical structure**. Database and schema context is specified once at the parent level, with nested privileges inheriting that context.
+The `grants` section allows fine-grained access control on database objects using a **hierarchical structure**. Database and schema context is specified once at the parent level, with nested privileges inheriting that context.
 
 ### Structure Overview
 
@@ -160,7 +160,7 @@ graph TD
 
 ```yaml
 spec:
-  privileges:
+  grants:
     databases:
       - name: "dev"
         privileges: [CONNECT, CREATE]
@@ -182,8 +182,8 @@ spec:
 |-------|-------------|----------------------|
 | Database | `databases` | `CONNECT`, `CREATE`, `ALL` |
 | Schema | `schemas` | `USAGE`, `CREATE`, `ALL` |
-| Table | `tables` | `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `TRUNCATE`, `REFERENCES`, `TRIGGER`, `ALL` |
-| View | `views` | `SELECT`, `INSERT`, `DELETE`, `UPDATE`, `TRIGGER`, `ALL` |
+| Table | `tables` | `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `ALL` |
+| View | `views` | `SELECT`, `ALL` |
 | Materialized View | `materializedViews` | `SELECT`, `ALL` |
 | Source | `sources` | `SELECT`, `ALL` |
 | Sink | `sinks` | `SELECT`, `ALL` |
@@ -196,7 +196,7 @@ spec:
 Use `"*"` as the name to grant privileges on all objects of that type within a schema:
 
 ```yaml
-privileges:
+grants:
   databases:
     - name: "dev"
       schemas:
@@ -386,7 +386,7 @@ spec:
     name: risingwave-sample
   permissions:
     - CREATEDB  # Can create analytics databases
-  privileges:
+  grants:
     databases:
       - name: analytics
         privileges: [CONNECT, CREATE]
@@ -417,7 +417,7 @@ metadata:
 spec:
   risingWaveRef:
     name: risingwave-sample
-  privileges:
+  grants:
     databases:
       - name: production
         privileges: [CONNECT, CREATE]
@@ -454,7 +454,7 @@ metadata:
 spec:
   risingWaveRef:
     name: risingwave-sample
-  privileges:
+  grants:
     databases:
       - name: dev
         privileges: ["ALL PRIVILEGES"]
@@ -511,7 +511,7 @@ The RisingWaveUser CRD now supports a **hierarchical privilege structure** where
 #### Structure Overview
 
 ```
-privileges:
+grants:
   databases:
     - name: "database_name"
       privileges: [CONNECT, CREATE]
@@ -563,7 +563,7 @@ metadata:
 spec:
   risingWaveRef:
     name: risingwave-sample
-  privileges:
+  grants:
     databases:
       - name: dev
         privileges: [CONNECT, CREATE]
@@ -600,7 +600,7 @@ privileges:
 
 **New (Hierarchical):**
 ```yaml
-privileges:
+grants:
   databases:
     - name: dev
       schemas:

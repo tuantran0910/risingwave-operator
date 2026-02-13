@@ -7,21 +7,21 @@ spec:
     name: risingwave-sample
   permissions:
     - CREATEDB
-  privileges:
+  grants:
     databases:
       - name: dev
-        privileges: [CONNECT, CREATE]
+        grants: [CONNECT, CREATE]
         schemas:
           - name: public
-            privileges: [USAGE, CREATE]
+            grants: [USAGE, CREATE]
             tables:
               - name: "orders"
-                privileges: [SELECT, INSERT]
+                grants: [SELECT, INSERT]
               - name: "customers"
-                privileges: [SELECT, UPDATE]
+                grants: [SELECT, UPDATE]
             views:
               - name: "order_summary"
-                privileges: [SELECT]
+                grants: [SELECT]
 ---
 apiVersion: risingwave.risingwavelabs.com/v1alpha1
 kind: RisingWaveUser
@@ -32,36 +32,36 @@ spec:
     name: risingwave-sample
   permissions:
     - CREATEDB  # Allow creating databases for analysis
-  privileges:
+  grants:
     databases:
       - name: analytics
-        privileges: [CONNECT, CREATE]
+        grants: [CONNECT, CREATE]
         schemas:
           - name: public
-            privileges: [USAGE, CREATE]
+            grants: [USAGE, CREATE]
             tables:
               - name: "events"
-                privileges: [SELECT, INSERT, UPDATE, DELETE]
+                grants: [SELECT, INSERT, UPDATE, DELETE]
               - name: "metrics"
-                privileges: [SELECT]
+                grants: [SELECT]
             materializedViews:
               - name: "daily_summary"
-                privileges: [SELECT]
+                grants: [SELECT]
             sources:
               - name: "kafka_source"
-                privileges: [SELECT]
+                grants: [SELECT]
             sinks:
               - name: "elasticsearch_sink"
-                privileges: [SELECT]
+                grants: [SELECT]
             connections:
               - name: "kafka_conn"
-                privileges: [USAGE]
+                grants: [USAGE]
             secrets:
               - name: "api_keys"
-                privileges: [USAGE]
+                grants: [USAGE]
             functions:
               - name: "process_data"
-                privileges: [EXECUTE]
+                grants: [EXECUTE]
 ---
 apiVersion: risingwave.risingwavelabs.com/v1alpha1
 kind: RisingWaveUser
@@ -70,22 +70,22 @@ metadata:
 spec:
   risingWaveRef:
     name: risingwave-sample
-  privileges:
+  grants:
     databases:
       - name: production
-        privileges: [CONNECT, CREATE]
+        grants: [CONNECT, CREATE]
         schemas:
           - name: ingestion
-            privileges: [USAGE, CREATE]
+            grants: [USAGE, CREATE]
             tables:
               - name: "*"
-                privileges: [INSERT, UPDATE, DELETE]
+                grants: [INSERT, UPDATE, DELETE]
             sources:
               - name: "*"
-                privileges: [SELECT]
+                grants: [SELECT]
             sinks:
               - name: "*"
-                privileges: [SELECT]
+                grants: [SELECT]
 ---
 apiVersion: risingwave.risingwavelabs.com/v1alpha1
 kind: RisingWaveUser
@@ -101,10 +101,10 @@ spec:
       issuer: "risingwave"
       audience:
         - "risingwave"
-  privileges:
+  grants:
     databases:
       - name: dev
-        privileges: [CONNECT]
+        grants: [CONNECT]
 
 ---
 apiVersion: risingwave.risingwavelabs.com/v1alpha1
@@ -122,10 +122,10 @@ spec:
       baseDN: "dc=example,dc=com"
       useSSL: false
       insecureSkipVerify: false
-  privileges:
+  grants:
     databases:
       - name: dev
-        privileges: [CONNECT]
+        grants: [CONNECT]
 
 ---
 apiVersion: risingwave.risingwavelabs.com/v1alpha1
@@ -136,14 +136,14 @@ spec:
   risingWaveRef:
     name: risingwave-sample
   name: "my_db_user"  # Actual username in RisingWave
-  privileges:
+  grants:
     databases:
       - name: dev
         schemas:
           - name: public
             tables:
               - name: "orders"
-                privileges: [SELECT, INSERT]
+                grants: [SELECT, INSERT]
 ---
 apiVersion: risingwave.risingwavelabs.com/v1alpha1
 kind: RisingWaveUser
@@ -155,19 +155,19 @@ spec:
   permissions:
     - CREATEDB
     - NOSUPERUSER
-  privileges:
+  grants:
     databases:
       - name: dev
-        privileges: [CONNECT, CREATE]
+        grants: [CONNECT, CREATE]
         schemas:
           - name: public
-            privileges: [USAGE, CREATE]
+            grants: [USAGE, CREATE]
             tables:
               - name: "projects"
-                privileges: [SELECT, INSERT, UPDATE, DELETE, TRIGGER]
+                grants: [SELECT, INSERT, UPDATE, DELETE, TRIGGER]
             functions:
               - name: "helper_functions"
-                privileges: [EXECUTE]
+                grants: [EXECUTE]
             connections:
               - name: "db_connections"
-                privileges: [USAGE]
+                grants: [USAGE]

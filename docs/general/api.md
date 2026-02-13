@@ -302,7 +302,7 @@ string
 <h3 id="risingwave.risingwavelabs.com/v1alpha1.DatabasePrivilege">DatabasePrivilege
 </h3>
 <p>
-(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.PrivilegeSpec">PrivilegeSpec</a>)
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.GrantSpec">GrantSpec</a>)
 </p>
 <div>
 <p>DatabasePrivilege defines privileges on a database and its nested objects.</p>
@@ -413,6 +413,40 @@ Privilege value validation is delegated to RisingWave during SQL execution.</p>
 </tr><tr><td><p>&#34;EXECUTE&#34;</p></td>
 <td></td>
 </tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.GrantSpec">GrantSpec
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserSpec">RisingWaveUserSpec</a>)
+</p>
+<div>
+<p>GrantSpec defines privilege grants on database objects using hierarchical structure.
+Grants are nested: databases -&gt; schemas -&gt; objects (tables, views, etc.)
+This allows database and schema context to be specified once at the parent level.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>databases</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.DatabasePrivilege">
+[]DatabasePrivilege
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Database-level privileges. Each database can contain nested schema privileges.</p>
+</td>
+</tr>
+</tbody>
 </table>
 <h3 id="risingwave.risingwavelabs.com/v1alpha1.LDAPConfig">LDAPConfig
 </h3>
@@ -1551,40 +1585,6 @@ waiting for a signal (field value, external system, or other) produced by a
 component responsible for a finalizer later in the list, resulting in a deadlock.
 Without enforced ordering finalizers are free to order amongst themselves and
 are not vulnerable to ordering changes in the list.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<h3 id="risingwave.risingwavelabs.com/v1alpha1.PrivilegeSpec">PrivilegeSpec
-</h3>
-<p>
-(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserSpec">RisingWaveUserSpec</a>)
-</p>
-<div>
-<p>PrivilegeSpec defines privilege grants on database objects using hierarchical structure.
-Privileges are nested: databases -&gt; schemas -&gt; objects (tables, views, etc.)
-This allows database and schema context to be specified once at the parent level.</p>
-</div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>
-<code>databases</code><br/>
-<em>
-<a href="#risingwave.risingwavelabs.com/v1alpha1.DatabasePrivilege">
-[]DatabasePrivilege
-</a>
-</em>
-</td>
-<td>
-<em>(Optional)</em>
-<p>Database-level privileges. Each database can contain nested schema privileges.</p>
 </td>
 </tr>
 </tbody>
@@ -7214,10 +7214,10 @@ AuthConfig
 </tr>
 <tr>
 <td>
-<code>privileges</code><br/>
+<code>grants</code><br/>
 <em>
-<a href="#risingwave.risingwavelabs.com/v1alpha1.PrivilegeSpec">
-PrivilegeSpec
+<a href="#risingwave.risingwavelabs.com/v1alpha1.GrantSpec">
+GrantSpec
 </a>
 </em>
 </td>
@@ -7357,10 +7357,10 @@ AuthConfig
 </tr>
 <tr>
 <td>
-<code>privileges</code><br/>
+<code>grants</code><br/>
 <em>
-<a href="#risingwave.risingwavelabs.com/v1alpha1.PrivilegeSpec">
-PrivilegeSpec
+<a href="#risingwave.risingwavelabs.com/v1alpha1.GrantSpec">
+GrantSpec
 </a>
 </em>
 </td>

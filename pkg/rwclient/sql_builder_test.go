@@ -149,7 +149,7 @@ func TestBuildGrantStatements(t *testing.T) {
 	user := &risingwavev1alpha1.RisingWaveUser{
 		Spec: risingwavev1alpha1.RisingWaveUserSpec{
 			Name: "testuser",
-			Privileges: &risingwavev1alpha1.PrivilegeSpec{
+			Grants: &risingwavev1alpha1.GrantSpec{
 				Databases: []risingwavev1alpha1.DatabasePrivilege{
 					{
 						Name: "dev",
@@ -185,7 +185,7 @@ func TestBuildGrantStatements_Hierarchical(t *testing.T) {
 		{
 			name: "nested schema and table privileges",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -220,7 +220,7 @@ func TestBuildGrantStatements_Hierarchical(t *testing.T) {
 		{
 			name: "wildcard table privileges",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "analytics",
@@ -250,7 +250,7 @@ func TestBuildGrantStatements_Hierarchical(t *testing.T) {
 		{
 			name: "all nested object types",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
@@ -896,7 +896,7 @@ func TestBuildGrantStatementsByDatabase(t *testing.T) {
 		{
 			name: "single database with table privileges",
 			spec: &risingwavev1alpha1.RisingWaveUserSpec{
-				Privileges: &risingwavev1alpha1.PrivilegeSpec{
+				Grants: &risingwavev1alpha1.GrantSpec{
 					Databases: []risingwavev1alpha1.DatabasePrivilege{
 						{
 							Name: "dev",
