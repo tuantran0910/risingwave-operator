@@ -19,6 +19,65 @@ toc: true
 <h2 id="risingwave.risingwavelabs.com/v1alpha1">risingwave.risingwavelabs.com/v1alpha1</h2>
 Resource Types:
 <ul></ul>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.AdminCredentials">AdminCredentials
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.ConnectionRef">ConnectionRef</a>, <a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveReference">RisingWaveReference</a>)
+</p>
+<div>
+<p>AdminCredentials holds credentials for connecting to RisingWave as an admin user.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>username</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Username to connect with.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>password</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Password is the plaintext admin password.
+Not recommended for production; use passwordSecretRef instead.
+Defaults to empty string if neither password nor passwordSecretRef is set.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>passwordSecretRef</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.SecretReference">
+SecretReference
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>PasswordSecretRef references a Kubernetes Secret containing the admin password.
+Takes precedence over the password field when both are set.</p>
+</td>
+</tr>
+</tbody>
+</table>
 <h3 id="risingwave.risingwavelabs.com/v1alpha1.AuthConfig">AuthConfig
 </h3>
 <p>
@@ -242,6 +301,62 @@ Privilege value validation is delegated to RisingWave during SQL execution.</p>
 </tr><tr><td><p>&#34;USAGE&#34;</p></td>
 <td></td>
 </tr></tbody>
+</table>
+<h3 id="risingwave.risingwavelabs.com/v1alpha1.ConnectionRef">ConnectionRef
+</h3>
+<p>
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.RisingWaveUserSpec">RisingWaveUserSpec</a>)
+</p>
+<div>
+<p>ConnectionRef defines a direct connection to an externally managed RisingWave frontend.</p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>host</code><br/>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Host is the hostname or IP of the RisingWave frontend service.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>port</code><br/>
+<em>
+int32
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Port is the PostgreSQL-compatible port of the RisingWave frontend.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>credentials</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.AdminCredentials">
+AdminCredentials
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Credentials for connecting to the RisingWave cluster as an admin.
+If omitted, connects with username &ldquo;root&rdquo; and empty password.</p>
+</td>
+</tr>
+</tbody>
 </table>
 <h3 id="risingwave.risingwavelabs.com/v1alpha1.ConnectionStatus">ConnectionStatus
 </h3>
@@ -5164,6 +5279,21 @@ string
 <p>Namespace of the RisingWave cluster. Defaults to the same namespace as the RisingWaveUser.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>credentials</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.AdminCredentials">
+AdminCredentials
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Credentials for connecting to the RisingWave cluster as an admin.
+If omitted, connects with username &ldquo;root&rdquo; and empty password.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="risingwave.risingwavelabs.com/v1alpha1.RisingWaveS3Credentials">RisingWaveS3Credentials
@@ -7155,7 +7285,24 @@ RisingWaveReference
 </em>
 </td>
 <td>
-<p>Reference to parent RisingWave cluster.</p>
+<em>(Optional)</em>
+<p>RisingWaveRef references a RisingWave CR managed by this operator.
+Mutually exclusive with connectionRef. Exactly one must be specified.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>connectionRef</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.ConnectionRef">
+ConnectionRef
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ConnectionRef specifies a direct connection to an externally managed RisingWave frontend.
+Mutually exclusive with risingWaveRef. Exactly one must be specified.</p>
 </td>
 </tr>
 <tr>
@@ -7298,7 +7445,24 @@ RisingWaveReference
 </em>
 </td>
 <td>
-<p>Reference to parent RisingWave cluster.</p>
+<em>(Optional)</em>
+<p>RisingWaveRef references a RisingWave CR managed by this operator.
+Mutually exclusive with connectionRef. Exactly one must be specified.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>connectionRef</code><br/>
+<em>
+<a href="#risingwave.risingwavelabs.com/v1alpha1.ConnectionRef">
+ConnectionRef
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ConnectionRef specifies a direct connection to an externally managed RisingWave frontend.
+Mutually exclusive with risingWaveRef. Exactly one must be specified.</p>
 </td>
 </tr>
 <tr>
@@ -7537,7 +7701,7 @@ Privilege value validation is delegated to RisingWave during SQL execution.</p>
 <h3 id="risingwave.risingwavelabs.com/v1alpha1.SecretReference">SecretReference
 </h3>
 <p>
-(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.PasswordConfig">PasswordConfig</a>)
+(<em>Appears on:</em><a href="#risingwave.risingwavelabs.com/v1alpha1.AdminCredentials">AdminCredentials</a>, <a href="#risingwave.risingwavelabs.com/v1alpha1.PasswordConfig">PasswordConfig</a>)
 </p>
 <div>
 <p>SecretReference references a secret in the same namespace.</p>

@@ -56,7 +56,7 @@ func newTestUser(name string) *risingwavev1alpha1.RisingWaveUser {
 			Namespace: "default",
 		},
 		Spec: risingwavev1alpha1.RisingWaveUserSpec{
-			RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+			RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 				Name:      "test-rw",
 				Namespace: "default",
 			},
@@ -95,7 +95,7 @@ func TestRisingWaveUserValidatingWebhook_ValidateCreate(t *testing.T) {
 					Name: "test-user",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Namespace: "default",
 					},
 				},
@@ -162,7 +162,7 @@ func TestRisingWaveUserValidatingWebhook_ValidateUpdate(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -174,7 +174,7 @@ func TestRisingWaveUserValidatingWebhook_ValidateUpdate(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -190,7 +190,7 @@ func TestRisingWaveUserValidatingWebhook_ValidateUpdate(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "oldname",
@@ -202,7 +202,7 @@ func TestRisingWaveUserValidatingWebhook_ValidateUpdate(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "newname",
@@ -218,7 +218,7 @@ func TestRisingWaveUserValidatingWebhook_ValidateUpdate(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -233,7 +233,7 @@ func TestRisingWaveUserValidatingWebhook_ValidateUpdate(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -252,7 +252,7 @@ func TestRisingWaveUserValidatingWebhook_ValidateUpdate(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -267,7 +267,7 @@ func TestRisingWaveUserValidatingWebhook_ValidateUpdate(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -312,7 +312,7 @@ func TestRisingWaveUserValidatingWebhook_validatePasswordConfig(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -331,7 +331,7 @@ func TestRisingWaveUserValidatingWebhook_validatePasswordConfig(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -352,7 +352,7 @@ func TestRisingWaveUserValidatingWebhook_validatePasswordConfig(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -374,7 +374,7 @@ func TestRisingWaveUserValidatingWebhook_validatePasswordConfig(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -393,7 +393,7 @@ func TestRisingWaveUserValidatingWebhook_validatePasswordConfig(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -412,7 +412,7 @@ func TestRisingWaveUserValidatingWebhook_validatePasswordConfig(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -459,7 +459,7 @@ func TestRisingWaveUserValidatingWebhook_validateAuthConfig_OAuth(t *testing.T) 
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -482,7 +482,7 @@ func TestRisingWaveUserValidatingWebhook_validateAuthConfig_OAuth(t *testing.T) 
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -501,7 +501,7 @@ func TestRisingWaveUserValidatingWebhook_validateAuthConfig_OAuth(t *testing.T) 
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -523,7 +523,7 @@ func TestRisingWaveUserValidatingWebhook_validateAuthConfig_OAuth(t *testing.T) 
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -545,7 +545,7 @@ func TestRisingWaveUserValidatingWebhook_validateAuthConfig_OAuth(t *testing.T) 
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -595,7 +595,7 @@ func TestRisingWaveUserValidatingWebhook_validateAuthConfig_LDAP(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -619,7 +619,7 @@ func TestRisingWaveUserValidatingWebhook_validateAuthConfig_LDAP(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -638,7 +638,7 @@ func TestRisingWaveUserValidatingWebhook_validateAuthConfig_LDAP(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -660,7 +660,7 @@ func TestRisingWaveUserValidatingWebhook_validateAuthConfig_LDAP(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -682,7 +682,7 @@ func TestRisingWaveUserValidatingWebhook_validateAuthConfig_LDAP(t *testing.T) {
 					Namespace: "default",
 				},
 				Spec: risingwavev1alpha1.RisingWaveUserSpec{
-					RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 						Name: "test-rw",
 					},
 					Name: "testuser",
@@ -767,7 +767,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: risingwavev1alpha1.RisingWaveUserSpec{
-				RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 					Name: "test-rw",
 				},
 				Name: "testuser",
@@ -800,7 +800,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: risingwavev1alpha1.RisingWaveUserSpec{
-				RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 					Name: "test-rw",
 				},
 				Name: "testuser",
@@ -832,7 +832,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: risingwavev1alpha1.RisingWaveUserSpec{
-				RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 					Name: "test-rw",
 				},
 				Name: "testuser",
@@ -862,7 +862,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: risingwavev1alpha1.RisingWaveUserSpec{
-				RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 					Name: "test-rw",
 				},
 				Name: "testuser",
@@ -892,7 +892,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: risingwavev1alpha1.RisingWaveUserSpec{
-				RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 					Name: "test-rw",
 				},
 				Name: "testuser",
@@ -940,7 +940,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: risingwavev1alpha1.RisingWaveUserSpec{
-				RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 					Name: "test-rw",
 				},
 				Name: "testuser",
@@ -977,7 +977,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: risingwavev1alpha1.RisingWaveUserSpec{
-				RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 					Name: "test-rw",
 				},
 				Name: "testuser",
@@ -1012,7 +1012,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: risingwavev1alpha1.RisingWaveUserSpec{
-				RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 					Name: "test-rw",
 				},
 				Name: "testuser",
@@ -1055,7 +1055,7 @@ func TestRisingWaveUserValidatingWebhook_validatePrivileges(t *testing.T) {
 				Namespace: "default",
 			},
 			Spec: risingwavev1alpha1.RisingWaveUserSpec{
-				RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 					Name: "test-rw",
 				},
 				Name: "testuser",
@@ -1099,4 +1099,216 @@ func TestRisingWaveUserValidatingWebhook_ValidateDelete(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.Empty(t, warnings)
+}
+
+// --- connectionRef tests ---
+
+func TestRisingWaveUserValidatingWebhook_ConnectionRef_MutualExclusion(t *testing.T) {
+	tests := []struct {
+		name    string
+		user    *risingwavev1alpha1.RisingWaveUser
+		wantErr string
+	}{
+		{
+			name: "both risingWaveRef and connectionRef set",
+			user: &risingwavev1alpha1.RisingWaveUser{
+				ObjectMeta: metav1.ObjectMeta{Name: "test-user", Namespace: "default"},
+				Spec: risingwavev1alpha1.RisingWaveUserSpec{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{Name: "test-rw"},
+					ConnectionRef: &risingwavev1alpha1.ConnectionRef{Host: "my-rw.default.svc"},
+				},
+			},
+			wantErr: "cannot specify both risingWaveRef and connectionRef",
+		},
+		{
+			name: "neither risingWaveRef nor connectionRef set",
+			user: &risingwavev1alpha1.RisingWaveUser{
+				ObjectMeta: metav1.ObjectMeta{Name: "test-user", Namespace: "default"},
+				Spec:       risingwavev1alpha1.RisingWaveUserSpec{},
+			},
+			wantErr: "one of risingWaveRef or connectionRef is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			fakeClient := newFakeClient(newTestRisingWave("test-rw"))
+			webhook := NewRisingWaveUserValidatingWebhook(fakeClient)
+			_, err := webhook.ValidateCreate(context.Background(), tt.user)
+			require.Error(t, err)
+			assert.Contains(t, err.Error(), tt.wantErr)
+		})
+	}
+}
+
+func TestRisingWaveUserValidatingWebhook_ConnectionRef_Validation(t *testing.T) {
+	tests := []struct {
+		name    string
+		ref     risingwavev1alpha1.ConnectionRef
+		wantErr string
+	}{
+		{
+			name:    "valid: host only (no credentials)",
+			ref:     risingwavev1alpha1.ConnectionRef{Host: "my-rw.default.svc"},
+			wantErr: "",
+		},
+		{
+			name: "valid: host with raw password",
+			ref: risingwavev1alpha1.ConnectionRef{
+				Host: "my-rw.default.svc",
+				Credentials: &risingwavev1alpha1.AdminCredentials{
+					Username: "root",
+					Password: "secret",
+				},
+			},
+			wantErr: "",
+		},
+		{
+			name: "valid: host with passwordSecretRef",
+			ref: risingwavev1alpha1.ConnectionRef{
+				Host: "my-rw.default.svc",
+				Credentials: &risingwavev1alpha1.AdminCredentials{
+					PasswordSecretRef: &risingwavev1alpha1.SecretReference{Name: "admin-secret"},
+				},
+			},
+			wantErr: "",
+		},
+		{
+			name:    "missing host",
+			ref:     risingwavev1alpha1.ConnectionRef{},
+			wantErr: "connectionRef.host is required",
+		},
+		{
+			name:    "port out of range (0 treated as default, no error)",
+			ref:     risingwavev1alpha1.ConnectionRef{Host: "my-rw.default.svc", Port: 0},
+			wantErr: "",
+		},
+		{
+			name:    "port out of range (too large)",
+			ref:     risingwavev1alpha1.ConnectionRef{Host: "my-rw.default.svc", Port: 70000},
+			wantErr: "port must be between 1 and 65535",
+		},
+		{
+			name: "passwordSecretRef without name",
+			ref: risingwavev1alpha1.ConnectionRef{
+				Host: "my-rw.default.svc",
+				Credentials: &risingwavev1alpha1.AdminCredentials{
+					PasswordSecretRef: &risingwavev1alpha1.SecretReference{},
+				},
+			},
+			wantErr: "passwordSecretRef.name is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ref := tt.ref
+			user := &risingwavev1alpha1.RisingWaveUser{
+				ObjectMeta: metav1.ObjectMeta{Name: "test-user", Namespace: "default"},
+				Spec:       risingwavev1alpha1.RisingWaveUserSpec{ConnectionRef: &ref},
+			}
+			fakeClient := newFakeClient(newTestRisingWave("test-rw"))
+			webhook := NewRisingWaveUserValidatingWebhook(fakeClient)
+			_, err := webhook.ValidateCreate(context.Background(), user)
+			if tt.wantErr == "" {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestRisingWaveUserValidatingWebhook_Update_CannotSwitchConnectionType(t *testing.T) {
+	fakeClient := newFakeClient(newTestRisingWave("test-rw"))
+	webhook := NewRisingWaveUserValidatingWebhook(fakeClient)
+
+	t.Run("risingWaveRef to connectionRef", func(t *testing.T) {
+		old := &risingwavev1alpha1.RisingWaveUser{
+			ObjectMeta: metav1.ObjectMeta{Name: "u", Namespace: "default"},
+			Spec: risingwavev1alpha1.RisingWaveUserSpec{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{Name: "test-rw"},
+			},
+		}
+		newObj := &risingwavev1alpha1.RisingWaveUser{
+			ObjectMeta: metav1.ObjectMeta{Name: "u", Namespace: "default"},
+			Spec: risingwavev1alpha1.RisingWaveUserSpec{
+				ConnectionRef: &risingwavev1alpha1.ConnectionRef{Host: "my-rw.default.svc"},
+			},
+		}
+		_, err := webhook.ValidateUpdate(context.Background(), old, newObj)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "cannot change connection type")
+	})
+
+	t.Run("connectionRef to risingWaveRef", func(t *testing.T) {
+		old := &risingwavev1alpha1.RisingWaveUser{
+			ObjectMeta: metav1.ObjectMeta{Name: "u", Namespace: "default"},
+			Spec: risingwavev1alpha1.RisingWaveUserSpec{
+				ConnectionRef: &risingwavev1alpha1.ConnectionRef{Host: "my-rw.default.svc"},
+			},
+		}
+		newObj := &risingwavev1alpha1.RisingWaveUser{
+			ObjectMeta: metav1.ObjectMeta{Name: "u", Namespace: "default"},
+			Spec: risingwavev1alpha1.RisingWaveUserSpec{
+				RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{Name: "test-rw"},
+			},
+		}
+		_, err := webhook.ValidateUpdate(context.Background(), old, newObj)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "cannot change connection type")
+	})
+}
+
+func TestRisingWaveUserValidatingWebhook_RisingWaveRef_Credentials(t *testing.T) {
+	tests := []struct {
+		name    string
+		creds   *risingwavev1alpha1.AdminCredentials
+		wantErr string
+	}{
+		{
+			name:    "no credentials (default)",
+			creds:   nil,
+			wantErr: "",
+		},
+		{
+			name:    "raw password",
+			creds:   &risingwavev1alpha1.AdminCredentials{Username: "admin", Password: "secret"},
+			wantErr: "",
+		},
+		{
+			name:    "passwordSecretRef",
+			creds:   &risingwavev1alpha1.AdminCredentials{PasswordSecretRef: &risingwavev1alpha1.SecretReference{Name: "the-secret"}},
+			wantErr: "",
+		},
+		{
+			name:    "passwordSecretRef without name",
+			creds:   &risingwavev1alpha1.AdminCredentials{PasswordSecretRef: &risingwavev1alpha1.SecretReference{}},
+			wantErr: "passwordSecretRef.name is required",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			user := &risingwavev1alpha1.RisingWaveUser{
+				ObjectMeta: metav1.ObjectMeta{Name: "test-user", Namespace: "default"},
+				Spec: risingwavev1alpha1.RisingWaveUserSpec{
+					RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
+						Name:        "test-rw",
+						Credentials: tt.creds,
+					},
+				},
+			}
+			fakeClient := newFakeClient(newTestRisingWave("test-rw"))
+			webhook := NewRisingWaveUserValidatingWebhook(fakeClient)
+			_, err := webhook.ValidateCreate(context.Background(), user)
+			if tt.wantErr == "" {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), tt.wantErr)
+			}
+		})
+	}
 }

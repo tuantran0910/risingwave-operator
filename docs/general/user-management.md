@@ -3,12 +3,101 @@
 The RisingWave Operator provides a Kubernetes-native way to manage database users for RisingWave clusters through the `RisingWaveUser` custom resource.
 
 This guide covers:
+- [Connecting to a Cluster](#connecting-to-a-cluster)
+- [Admin Credentials](#admin-credentials)
 - [Basic User Creation](#basic-user-creation)
 - [Password Management](#password-management)
 - [Privilege Grants](#privilege-grants)
 - [Authentication Methods](#authentication-methods)
 - [User Operations](#user-operations)
 - [Retrieving Credentials](#retrieving-credentials)
+
+---
+
+## Connecting to a Cluster
+
+`RisingWaveUser` must know **which RisingWave instance to connect to** in order to execute user management SQL. There are two mutually exclusive ways to specify this. Exactly one must be set.
+
+### Option 1: `risingWaveRef` — Operator-managed cluster
+
+Use this when the cluster is deployed and managed by the RisingWave Operator (via a `RisingWave` CR). The operator automatically discovers the frontend service endpoint.
+
+```yaml
+spec:
+  risingWaveRef:
+    name: risingwave-sample        # Name of the RisingWave CR
+    namespace: default             # Optional — defaults to same namespace as RisingWaveUser
+```
+
+The operator waits until the referenced `RisingWave` CR reaches `Running` status before managing the user.
+
+### Option 2: `connectionRef` — External or directly connected cluster
+
+Use this when the cluster was **not** deployed via the operator (e.g., Helm, standalone, cloud-managed) or when you want to manage users independently without a `RisingWave` CR.
+
+```yaml
+spec:
+  connectionRef:
+    host: my-risingwave-frontend.default.svc.cluster.local   # Required
+    port: 4567                                               # Optional, default: 4567
+```
+
+With `connectionRef`, the operator connects directly to the given host/port and has **no readiness gate** — it attempts the connection immediately.
+
+> [!IMPORTANT]
+> `risingWaveRef` and `connectionRef` are mutually exclusive. Specifying both — or neither — is a validation error. The connection type also **cannot be changed** after the resource is created.
+
+---
+
+## Admin Credentials
+
+Both `risingWaveRef` and `connectionRef` support an optional `credentials` block for specifying how the operator authenticates to RisingWave as an admin in order to run user management SQL.
+
+```yaml
+credentials:
+  username: root          # Optional, defaults to "root"
+  password: mypassword    # Optional plaintext — use passwordSecretRef in production
+  passwordSecretRef:      # Optional — takes precedence over password
+    name: rw-admin-secret
+    namespace: default    # Optional
+    key: password         # Optional, defaults to "password"
+```
+
+**Resolution priority:**
+1. `passwordSecretRef` — password read from a Kubernetes Secret key
+2. `password` — plaintext value in the spec
+3. Neither set → connects with username `root` and **empty password** (default RisingWave install)
+
+> [!NOTE]
+> The `password` field stores credentials in plaintext in the Kubernetes API. It is acceptable for development and testing, but `passwordSecretRef` is recommended for production.
+
+### Examples
+
+```yaml
+# Operator-managed cluster with admin secret
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+    credentials:
+      passwordSecretRef:
+        name: rw-admin-credentials
+        key: password
+
+# External cluster with plaintext password (dev/test only)
+spec:
+  connectionRef:
+    host: my-risingwave-frontend.default.svc.cluster.local
+    credentials:
+      username: root
+      password: my-admin-password
+
+# No credentials block — connects as root with empty password
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+```
+
+---
 
 ## Basic User Creation
 
@@ -31,6 +120,21 @@ This creates a user named `my-user` in RisingWave with:
 - Default database connection privileges
 - Secret created at `risingwave-risingwave-sample-my-user`
 
+### Minimal User via Direct Connection
+
+```yaml
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: my-user
+spec:
+  connectionRef:
+    host: my-risingwave-frontend.default.svc.cluster.local
+    port: 4567
+```
+
+This creates the same user but connects directly. Secret is created at `risingwave-direct-my-user`.
+
 ### User with Custom Name
 
 Use `spec.name` to set a different RisingWave username than the Kubernetes resource name:
@@ -39,11 +143,11 @@ Use `spec.name` to set a different RisingWave username than the Kubernetes resou
 apiVersion: risingwave.risingwavelabs.com/v1alpha1
 kind: RisingWaveUser
 metadata:
-  name: my-user-resource  # Kubernetes resource name
+  name: my-user-resource     # Kubernetes resource name
 spec:
   risingWaveRef:
     name: risingwave-sample
-  name: "my_db_user"  # Actual RisingWave username
+  name: "my_db_user"         # Actual RisingWave username
 ```
 
 ### User with Database Permissions
@@ -60,8 +164,7 @@ spec:
     name: risingwave-sample
   permissions:
     - CREATEDB    # Can create databases
-    - CREATEUSER   # Can create other users
-  # Note: SUPERUSER is implicitly granted all permissions
+    - CREATEUSER  # Can create other users
 ```
 
 **Available User Permissions:**
@@ -72,6 +175,8 @@ spec:
 - `NOCREATEDB` - Remove database creation privilege
 - `NOCREATEUSER` - Remove user creation privilege
 
+---
+
 ## Password Management
 
 ### Auto-Generated Password
@@ -79,10 +184,6 @@ spec:
 By default, a 16-character random password is generated. Customize length:
 
 ```yaml
-apiVersion: risingwave.risingwavelabs.com/v1alpha1
-kind: RisingWaveUser
-metadata:
-  name: secure-user
 spec:
   risingWaveRef:
     name: risingwave-sample
@@ -95,10 +196,6 @@ spec:
 Reference an existing secret:
 
 ```yaml
-apiVersion: risingwave.risingwavelabs.com/v1alpha1
-kind: RisingWaveUser
-metadata:
-  name: secret-user
 spec:
   risingWaveRef:
     name: risingwave-sample
@@ -106,7 +203,7 @@ spec:
     secretRef:
       name: my-existing-password
       namespace: default  # Optional, defaults to RisingWaveUser namespace
-      key: password         # Optional, defaults to "password"
+      key: password       # Optional, defaults to "password"
 ```
 
 **Secret Format:**
@@ -134,11 +231,13 @@ The operator will:
 3. Update the Kubernetes Secret
 4. Remove the annotation
 
-**Note:** The operator only honors this annotation when using auto-generated passwords. If you use `secretRef`, you must rotate the password manually in the secret.
+**Note:** The operator only honors this annotation when using auto-generated passwords. If you use `secretRef`, rotate the password manually in the secret.
+
+---
 
 ## Privilege Grants
 
-The `grants` section allows fine-grained access control on database objects using a **hierarchical structure**. Database and schema context is specified once at the parent level, with nested privileges inheriting that context.
+The `grants` section allows fine-grained access control on database objects using a **hierarchical structure**. Database and schema context is specified once at the parent level.
 
 ### Structure Overview
 
@@ -206,6 +305,8 @@ grants:
               privileges: [SELECT]
 ```
 
+---
+
 ## Authentication Methods
 
 ### Password Authentication (Default)
@@ -262,10 +363,10 @@ spec:
     type: ldap
     ldap:
       host: "ldap.example.com"
-      port: 389                      # Optional, default: 389
+      port: 389                     # Optional, default: 389
       baseDN: "dc=example,dc=com"
-      useSSL: true                 # Optional
-      insecureSkipVerify: false    # Optional
+      useSSL: true                  # Optional
+      insecureSkipVerify: false     # Optional
 ```
 
 **LDAP Configuration:**
@@ -274,6 +375,8 @@ spec:
 - `baseDN` - Base DN for LDAP searches (required)
 - `useSSL` - Use SSL/TLS for connections (optional)
 - `insecureSkipVerify` - Skip TLS certificate verification (optional)
+
+---
 
 ## User Operations
 
@@ -286,10 +389,10 @@ apiVersion: risingwave.risingwavelabs.com/v1alpha1
 kind: RisingWaveUser
 metadata:
   name: my-user
-  namespace: app-namespace           # User namespace
+  namespace: app-namespace          # User namespace
 spec:
   risingWaveRef:
-    name: risingwave-sample        # Cluster name
+    name: risingwave-sample
     namespace: database-namespace   # Cluster namespace
 ```
 
@@ -304,30 +407,47 @@ The operator will:
 2. Delete the Kubernetes Secret containing the password
 3. Remove finalizers from the resource
 
+### Pausing Reconciliation
+
+To pause all reconciliation for a user:
+
+```bash
+kubectl annotate risingwaveuser my-user "risingwave.risingwavelabs.com/pause-reconcile=true"
+```
+
+---
+
 ## Retrieving Credentials
 
-The operator stores user credentials in a Kubernetes Secret named:
+The operator stores user credentials in a Kubernetes Secret. The secret name depends on the connection mode:
 
-```
-risingwave-<risingwave-name>-<resource-name>
-```
+| Connection mode | Secret name pattern |
+|-----------------|---------------------|
+| `risingWaveRef` | `risingwave-<cluster-name>-<resource-name>` |
+| `connectionRef` | `risingwave-direct-<resource-name>` |
 
-For example, a RisingWaveUser named `analytics-user` referencing a RisingWave cluster named `risingwave-sample` creates a secret at:
+**Examples:**
 
-```
-risingwave-risingwave-sample-analytics-user
-```
+| Resource name | Cluster / mode | Secret name |
+|---------------|----------------|-------------|
+| `analytics-user` | `risingWaveRef`, cluster `risingwave-sample` | `risingwave-risingwave-sample-analytics-user` |
+| `analytics-user` | `connectionRef` (direct) | `risingwave-direct-analytics-user` |
 
 ### Get Secret
 
 ```bash
+# risingWaveRef mode
 kubectl get secret risingwave-risingwave-sample-analytics-user -o yaml
+
+# connectionRef mode
+kubectl get secret risingwave-direct-analytics-user -o yaml
 ```
 
 ### Extract Password
 
 ```bash
-kubectl get secret risingwave-risingwave-sample-analytics-user -o jsonpath='{.data.password}' | base64 -d
+kubectl get secret risingwave-risingwave-sample-analytics-user \
+  -o jsonpath='{.data.password}' | base64 -d
 ```
 
 ### Use with psql
@@ -337,17 +457,12 @@ kubectl get secret risingwave-risingwave-sample-analytics-user -o jsonpath='{.da
 kubectl port-forward svc/risingwave-sample-frontend 4567:service
 
 # Get password and connect
-PASSWORD=$(kubectl get secret risingwave-risingwave-sample-analytics-user -o jsonpath='{.data.password}' | base64 -d)
+PASSWORD=$(kubectl get secret risingwave-risingwave-sample-analytics-user \
+  -o jsonpath='{.data.password}' | base64 -d)
 psql -h localhost -p 4567 -d dev -U analytics-user -W <<< "$PASSWORD"
 ```
 
-### Connection String Format
-
-For applications, use the retrieved credentials to construct a connection string:
-
-```
-postgresql://analytics-user:PASSWORD@localhost:4567/dev
-```
+---
 
 ## Status and Conditions
 
@@ -372,9 +487,14 @@ kubectl get risingwaveuser my-user -o yaml
 - `PrivilegesSynced` - Privileges applied
 - `ConnectionError` - Connection to RisingWave failed
 
+> [!NOTE]
+> When using `connectionRef`, the `Pending` phase is skipped — the operator does not wait for a RisingWave CR readiness condition. If the connection fails, the user goes directly to `Failed`.
+
+---
+
 ## Common Patterns
 
-### Read-Only Analytics User
+### Read-Only Analytics User (operator-managed cluster)
 
 ```yaml
 apiVersion: risingwave.risingwavelabs.com/v1alpha1
@@ -384,30 +504,25 @@ metadata:
 spec:
   risingWaveRef:
     name: risingwave-sample
-  permissions:
-    - CREATEDB  # Can create analytics databases
   grants:
     databases:
       - name: analytics
-        privileges: [CONNECT, CREATE]
-    tables:
-      - database: analytics
-        schema: public
-        name: "*"
-        privileges: [SELECT]
-    views:
-      - database: analytics
-        schema: public
-        name: "*"
-        privileges: [SELECT]
-    materializedViews:
-      - database: analytics
-        schema: public
-        name: "*"
-        privileges: [SELECT]
+        privileges: [CONNECT]
+        schemas:
+          - name: public
+            privileges: [USAGE]
+            tables:
+              - name: "*"
+                privileges: [SELECT]
+            views:
+              - name: "*"
+                privileges: [SELECT]
+            materializedViews:
+              - name: "*"
+                privileges: [SELECT]
 ```
 
-### Data Ingestion User
+### Data Ingestion User (external cluster)
 
 ```yaml
 apiVersion: risingwave.risingwavelabs.com/v1alpha1
@@ -415,31 +530,28 @@ kind: RisingWaveUser
 metadata:
   name: ingestion-writer
 spec:
-  risingWaveRef:
-    name: risingwave-sample
+  connectionRef:
+    host: my-risingwave-frontend.default.svc.cluster.local
+    credentials:
+      passwordSecretRef:
+        name: rw-admin-credentials
+        key: password
   grants:
     databases:
       - name: production
         privileges: [CONNECT, CREATE]
-    schemas:
-      - database: production
-        name: ingestion
-        privileges: [USAGE, CREATE]
-    tables:
-      - database: production
-        schema: ingestion
-        name: "*"
-        privileges: [SELECT, INSERT, UPDATE, DELETE]
-    sources:
-      - database: production
-        schema: ingestion
-        name: "*"
-        privileges: [SELECT]
-    sinks:
-      - database: production
-        schema: ingestion
-        name: "*"
-        privileges: [SELECT]
+        schemas:
+          - name: ingestion
+            privileges: [USAGE, CREATE]
+            tables:
+              - name: "*"
+                privileges: [SELECT, INSERT, UPDATE, DELETE]
+            sources:
+              - name: "*"
+                privileges: [SELECT]
+            sinks:
+              - name: "*"
+                privileges: [SELECT]
 ```
 
 ### Delegated Admin User
@@ -457,9 +569,11 @@ spec:
   grants:
     databases:
       - name: dev
-        privileges: ["ALL PRIVILEGES"]
-        withGrantOption: true    # Can grant these privileges
+        privileges: [ALL]
+        withGrantOption: true    # Can grant these privileges to others
 ```
+
+---
 
 ## Troubleshooting
 
@@ -472,30 +586,29 @@ kubectl describe risingwaveuser my-user
 ```
 
 Look for:
-- `ConnectionError` condition - Operator cannot connect to RisingWave
-- Verify `risingWaveRef.name` points to a valid cluster
-- Verify the RisingWave cluster is in `Running` status
+- `ConnectionError` condition — Operator cannot connect to RisingWave
+- For `risingWaveRef`: verify the cluster name is correct and the cluster is in `Running` status
+- For `connectionRef`: verify the `host` and `port` are reachable from within the cluster
 
-### Permission Denied After Creation
+### Connection Refused (connectionRef)
 
-The user may not have immediate access to granted objects. This is normal in some cases. Verify privileges:
-
-```sql
--- Connect as superuser and check grants
-\du
-SELECT * FROM pg_roles WHERE rolname = 'my-user';
-SELECT grantee, privilege_type FROM pg_admin.extern_grants WHERE grantee = 'my-user';
-```
+If you see a connection error with `connectionRef`:
+1. Verify the host DNS is resolvable from the operator pod
+2. Verify the port is correct (default: `4567`)
+3. Check admin credentials — if the admin requires a password, ensure `credentials.passwordSecretRef` or `credentials.password` is set
+4. Ensure the admin user has `SUPERUSER` or `CREATEUSER` privileges
 
 ### Secret Not Found
 
-If the secret doesn't exist:
+If the password secret doesn't exist:
 
 ```bash
 kubectl get secrets | grep risingwave
 ```
 
-Check the `status.secretName` field and ensure the secret is in the same namespace as the RisingWaveUser.
+Check `status.secretName` to see the expected secret name, and confirm which mode is in use:
+- `risingWaveRef` mode → secret: `risingwave-<cluster>-<user>`
+- `connectionRef` mode → secret: `risingwave-direct-<user>`
 
 ### Password Rotation Not Working
 
@@ -504,11 +617,9 @@ Ensure:
 2. The annotation is exactly: `risingwave.risingwavelabs.com/rotate-password=true`
 3. The annotation value is the string `"true"`
 
-### Hierarchical Privilege Structure
+---
 
-The RisingWaveUser CRD now supports a **hierarchical privilege structure** where database and schema context is specified once at the parent level, with nested privileges inheriting that context.
-
-#### Structure Overview
+## Privilege Grant Structure Reference
 
 ```
 grants:
@@ -524,96 +635,28 @@ grants:
             - name: "table_name"  # or "*" for all tables
               privileges: [SELECT, INSERT, UPDATE]
           views:
-            - name: "view_name"  # or "*" for all views
+            - name: "view_name"   # or "*" for all views
               privileges: [SELECT]
           materializedViews:
-            - name: "mv_name"  # or "*" for all materialized views
+            - name: "mv_name"
               privileges: [SELECT]
           sources:
-            - name: "source_name"  # or "*" for all sources
+            - name: "source_name"
               privileges: [SELECT]
           sinks:
-            - name: "sink_name"  # or "*" for all sinks
+            - name: "sink_name"
               privileges: [SELECT]
           connections:
-            - name: "connection_name"  # or "*" for all connections
+            - name: "connection_name"
               privileges: [USAGE]
           secrets:
-            - name: "secret_name"  # or "*" for all secrets
+            - name: "secret_name"
               privileges: [USAGE]
           functions:
-            - name: "function_name"  # or "*" for all functions
+            - name: "function_name"
               privileges: [EXECUTE]
 ```
 
-#### Key Benefits of Hierarchical Structure
-
-1. **DRY - Don't Repeat Yourself**: Database and schema names are specified once at the parent level
-2. **Better Organization**: Logical grouping of related privileges under their parent objects
-3. **Easier Maintenance**: Changes to a schema's objects only require updating the schema definition
-4. **Wildcard Support**: Use "*" for all objects of a type (tables, views, etc.) within a schema
-
-#### Example
-
-```yaml
-apiVersion: risingwave.risingwavelabs.com/v1alpha1
-kind: RisingWaveUser
-metadata:
-  name: example-user
-spec:
-  risingWaveRef:
-    name: risingwave-sample
-  grants:
-    databases:
-      - name: dev
-        privileges: [CONNECT, CREATE]
-        schemas:
-          - name: public
-            privileges: [USAGE, CREATE]
-            tables:
-              - name: "events"
-                privileges: [SELECT, INSERT, UPDATE, DELETE]
-              - name: "metrics"
-                privileges: [SELECT]
-            materializedViews:
-              - name: "daily_summary"
-                privileges: [SELECT]
-```
-
-#### Migration from Flat Structure
-
-If you have existing manifests using the old flat structure:
-
-**Old (Flat):**
-```yaml
-privileges:
-  schemas:
-    - database: dev
-      name: public
-      privileges: [USAGE]
-  tables:
-        - database: dev
-          schema: public
-          name: orders
-          privileges: [SELECT]
-```
-
-**New (Hierarchical):**
-```yaml
-grants:
-  databases:
-    - name: dev
-      schemas:
-        - name: public
-            tables:
-              - name: orders
-                privileges: [SELECT]
-```
-
-**Note:** The old flat structure (`schemas:`, `tables:`, `views: etc. directly under `privileges`) is **deprecated**. Only the hierarchical structure under `databases -> schemas` should be used for new RisingWaveUser resources.
-
 ---
-
-
 
 For complete API reference, see [API Documentation](api.md).

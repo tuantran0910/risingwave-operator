@@ -22,9 +22,15 @@ import (
 
 // RisingWaveUserSpec defines the desired state of RisingWaveUser.
 type RisingWaveUserSpec struct {
-	// Reference to parent RisingWave cluster.
-	// +kubebuilder:validation:Required
-	RisingWaveRef RisingWaveReference `json:"risingWaveRef"`
+	// RisingWaveRef references a RisingWave CR managed by this operator.
+	// Mutually exclusive with connectionRef. Exactly one must be specified.
+	// +optional
+	RisingWaveRef *RisingWaveReference `json:"risingWaveRef,omitempty"`
+
+	// ConnectionRef specifies a direct connection to an externally managed RisingWave frontend.
+	// Mutually exclusive with risingWaveRef. Exactly one must be specified.
+	// +optional
+	ConnectionRef *ConnectionRef `json:"connectionRef,omitempty"`
 
 	// User name in RisingWave. Defaults to metadata.name if empty.
 	// +optional
@@ -56,6 +62,49 @@ type RisingWaveReference struct {
 	// Namespace of the RisingWave cluster. Defaults to the same namespace as the RisingWaveUser.
 	// +optional
 	Namespace string `json:"namespace,omitempty"`
+
+	// Credentials for connecting to the RisingWave cluster as an admin.
+	// If omitted, connects with username "root" and empty password.
+	// +optional
+	Credentials *AdminCredentials `json:"credentials,omitempty"`
+}
+
+// AdminCredentials holds credentials for connecting to RisingWave as an admin user.
+type AdminCredentials struct {
+	// Username to connect with.
+	// +kubebuilder:default=root
+	// +optional
+	Username string `json:"username,omitempty"`
+
+	// Password is the plaintext admin password.
+	// Not recommended for production; use passwordSecretRef instead.
+	// Defaults to empty string if neither password nor passwordSecretRef is set.
+	// +optional
+	Password string `json:"password,omitempty"`
+
+	// PasswordSecretRef references a Kubernetes Secret containing the admin password.
+	// Takes precedence over the password field when both are set.
+	// +optional
+	PasswordSecretRef *SecretReference `json:"passwordSecretRef,omitempty"`
+}
+
+// ConnectionRef defines a direct connection to an externally managed RisingWave frontend.
+type ConnectionRef struct {
+	// Host is the hostname or IP of the RisingWave frontend service.
+	// +kubebuilder:validation:Required
+	Host string `json:"host"`
+
+	// Port is the PostgreSQL-compatible port of the RisingWave frontend.
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=65535
+	// +kubebuilder:default=4567
+	// +optional
+	Port int32 `json:"port,omitempty"`
+
+	// Credentials for connecting to the RisingWave cluster as an admin.
+	// If omitted, connects with username "root" and empty password.
+	// +optional
+	Credentials *AdminCredentials `json:"credentials,omitempty"`
 }
 
 // PasswordConfig defines password configuration for a user.

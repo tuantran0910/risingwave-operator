@@ -54,9 +54,8 @@ const (
 
 	// Default connection settings.
 	defaultFrontendPort = int32(4567)
-	defaultDatabase     = "dev"
 	defaultUsername     = "root"
-	defaultPassword     = "root"
+	defaultPassword     = ""
 )
 
 // +kubebuilder:rbac:groups=risingwave.risingwavelabs.com,resources=risingwaveusers,verbs=get;list;watch;create;update;patch;delete
@@ -167,29 +166,31 @@ func (r *RisingWaveUserReconciler) reconcileNormal(ctx context.Context) (ctrl.Re
 		return ctrl.Result{Requeue: true}, nil
 	}
 
-	// Fetch referenced RisingWave cluster
-	if err := r.fetchRisingWave(ctx); err != nil {
-		r.setPhase(risingwavev1alpha1.RisingWaveUserPhaseFailed)
-		r.setErrorCondition("FailedToFetchRisingWave", err.Error())
-		if updateErr := r.updateStatus(ctx); updateErr != nil {
-			return ctrl.Result{}, updateErr
-		}
-		return ctrl.Result{}, err
-	}
-
-	// Check if RisingWave is ready
-	if !r.isRisingWaveReady() {
-		r.setPhase(risingwavev1alpha1.RisingWaveUserPhasePending)
-		r.setCondition(metav1.Condition{
-			Type:    string(risingwavev1alpha1.RisingWaveUserConditionReady),
-			Status:  metav1.ConditionFalse,
-			Reason:  "RisingWaveNotReady",
-			Message: "RisingWave cluster is not ready yet",
-		})
-		if err := r.updateStatus(ctx); err != nil {
+	// Fetch referenced RisingWave cluster (only when using risingWaveRef)
+	if !r.usesConnectionRef() {
+		if err := r.fetchRisingWave(ctx); err != nil {
+			r.setPhase(risingwavev1alpha1.RisingWaveUserPhaseFailed)
+			r.setErrorCondition("FailedToFetchRisingWave", err.Error())
+			if updateErr := r.updateStatus(ctx); updateErr != nil {
+				return ctrl.Result{}, updateErr
+			}
 			return ctrl.Result{}, err
 		}
-		return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+
+		// Check if RisingWave is ready
+		if !r.isRisingWaveReady() {
+			r.setPhase(risingwavev1alpha1.RisingWaveUserPhasePending)
+			r.setCondition(metav1.Condition{
+				Type:    string(risingwavev1alpha1.RisingWaveUserConditionReady),
+				Status:  metav1.ConditionFalse,
+				Reason:  "RisingWaveNotReady",
+				Message: "RisingWave cluster is not ready yet",
+			})
+			if err := r.updateStatus(ctx); err != nil {
+				return ctrl.Result{}, err
+			}
+			return ctrl.Result{RequeueAfter: 10 * time.Second}, nil
+		}
 	}
 
 	// Establish database connection
@@ -317,12 +318,19 @@ func (r *RisingWaveUserReconciler) reconcileDelete(ctx context.Context) (ctrl.Re
 
 	// If user was created, drop it from RisingWave
 	if r.rwUser.Status.UserCreated {
-		if err := r.fetchRisingWave(ctx); err != nil {
-			r.logger.Error(err, "Failed to fetch RisingWave during deletion")
-			return ctrl.Result{}, err
+		canConnect := false
+		if r.usesConnectionRef() {
+			// Direct connection — no readiness gate
+			canConnect = true
+		} else {
+			if err := r.fetchRisingWave(ctx); err != nil {
+				r.logger.Error(err, "Failed to fetch RisingWave during deletion")
+				return ctrl.Result{}, err
+			}
+			canConnect = r.isRisingWaveReady()
 		}
 
-		if r.isRisingWaveReady() {
+		if canConnect {
 			if err := r.establishConnection(ctx); err != nil {
 				r.logger.Error(err, "Failed to establish connection during deletion")
 				// Continue anyway to remove finalizer
@@ -357,8 +365,10 @@ func (r *RisingWaveUserReconciler) reconcileDelete(ctx context.Context) (ctrl.Re
 }
 
 // fetchRisingWave fetches the referenced RisingWave cluster.
+// Only called when using risingWaveRef.
 func (r *RisingWaveUserReconciler) fetchRisingWave(ctx context.Context) error {
-	namespace := r.rwUser.Spec.RisingWaveRef.Namespace
+	ref := r.rwUser.Spec.RisingWaveRef
+	namespace := ref.Namespace
 	if namespace == "" {
 		namespace = r.rwUser.Namespace
 	}
@@ -366,7 +376,7 @@ func (r *RisingWaveUserReconciler) fetchRisingWave(ctx context.Context) error {
 	r.risingWave = &risingwavev1alpha1.RisingWave{}
 	err := r.Get(ctx, types.NamespacedName{
 		Namespace: namespace,
-		Name:      r.rwUser.Spec.RisingWaveRef.Name,
+		Name:      ref.Name,
 	}, r.risingWave)
 
 	return err
@@ -388,8 +398,61 @@ func (r *RisingWaveUserReconciler) isRisingWaveReady() bool {
 	return false
 }
 
-// establishConnection establishes a database connection to RisingWave.
+// usesConnectionRef returns true when the user specifies a direct connectionRef.
+func (r *RisingWaveUserReconciler) usesConnectionRef() bool {
+	return r.rwUser.Spec.ConnectionRef != nil
+}
+
+// resolveAdminCredentials resolves the admin username and password from an AdminCredentials spec.
+// Priority: passwordSecretRef > password > default empty string.
+func (r *RisingWaveUserReconciler) resolveAdminCredentials(ctx context.Context, creds *risingwavev1alpha1.AdminCredentials) (username, password string, err error) {
+	username = defaultUsername
+	password = defaultPassword
+	if creds == nil {
+		return
+	}
+	if creds.Username != "" {
+		username = creds.Username
+	}
+	if creds.PasswordSecretRef != nil {
+		password, err = r.readSecretValue(ctx, creds.PasswordSecretRef)
+		return
+	}
+	password = creds.Password
+	return
+}
+
+// readSecretValue reads a value from a Kubernetes Secret using a SecretReference.
+func (r *RisingWaveUserReconciler) readSecretValue(ctx context.Context, ref *risingwavev1alpha1.SecretReference) (string, error) {
+	namespace := ref.Namespace
+	if namespace == "" {
+		namespace = r.rwUser.Namespace
+	}
+	secret := &corev1.Secret{}
+	if err := r.Get(ctx, types.NamespacedName{Namespace: namespace, Name: ref.Name}, secret); err != nil {
+		return "", fmt.Errorf("failed to get admin credentials secret %s/%s: %w", namespace, ref.Name, err)
+	}
+	key := ref.Key
+	if key == "" {
+		key = "password"
+	}
+	val, ok := secret.Data[key]
+	if !ok {
+		return "", fmt.Errorf("key %q not found in secret %s/%s", key, namespace, ref.Name)
+	}
+	return string(val), nil
+}
+
+// establishConnection dispatches to the correct connection strategy.
 func (r *RisingWaveUserReconciler) establishConnection(ctx context.Context) error {
+	if r.usesConnectionRef() {
+		return r.establishConnectionFromConnectionRef(ctx)
+	}
+	return r.establishConnectionFromRisingWaveRef(ctx)
+}
+
+// establishConnectionFromRisingWaveRef establishes a connection via the operator-managed RisingWave CR.
+func (r *RisingWaveUserReconciler) establishConnectionFromRisingWaveRef(ctx context.Context) error {
 	r.connectionKey = rwclient.ConnectionKeyFrom(
 		r.risingWave.Namespace,
 		r.risingWave.Name,
@@ -406,11 +469,14 @@ func (r *RisingWaveUserReconciler) establishConnection(ctx context.Context) erro
 		return fmt.Errorf("failed to get frontend service: %w", err)
 	}
 
-	// Build connection info
 	host := fmt.Sprintf("%s.%s.svc.cluster.local", svc.Name, svc.Namespace)
-	connInfo := rwclient.DefaultConnectionInfo(host, defaultFrontendPort, defaultUsername, defaultPassword)
 
-	// Get connection from pool
+	username, password, err := r.resolveAdminCredentials(ctx, r.rwUser.Spec.RisingWaveRef.Credentials)
+	if err != nil {
+		return fmt.Errorf("failed to resolve admin credentials: %w", err)
+	}
+
+	connInfo := rwclient.DefaultConnectionInfo(host, defaultFrontendPort, username, password)
 	db, err := r.ConnectionPool.Get(ctx, r.connectionKey, connInfo)
 	if err != nil {
 		return fmt.Errorf("failed to get database connection: %w", err)
@@ -418,7 +484,37 @@ func (r *RisingWaveUserReconciler) establishConnection(ctx context.Context) erro
 
 	r.conn = &sqlDB{db}
 	r.updateConnectionStatus(true, "")
+	return nil
+}
 
+// establishConnectionFromConnectionRef establishes a connection directly from spec.connectionRef.
+func (r *RisingWaveUserReconciler) establishConnectionFromConnectionRef(ctx context.Context) error {
+	ref := r.rwUser.Spec.ConnectionRef
+
+	port := ref.Port
+	if port == 0 {
+		port = defaultFrontendPort
+	}
+
+	// Build a stable ConnectionKey from host+port (no UID available for external clusters)
+	r.connectionKey = rwclient.ConnectionKey{
+		Namespace: r.rwUser.Namespace,
+		Name:      fmt.Sprintf("%s:%d", ref.Host, port),
+	}
+
+	username, password, err := r.resolveAdminCredentials(ctx, ref.Credentials)
+	if err != nil {
+		return fmt.Errorf("failed to resolve admin credentials: %w", err)
+	}
+
+	connInfo := rwclient.DefaultConnectionInfo(ref.Host, port, username, password)
+	db, err := r.ConnectionPool.Get(ctx, r.connectionKey, connInfo)
+	if err != nil {
+		return fmt.Errorf("failed to get database connection: %w", err)
+	}
+
+	r.conn = &sqlDB{db}
+	r.updateConnectionStatus(true, "")
 	return nil
 }
 
@@ -507,6 +603,9 @@ func (r *RisingWaveUserReconciler) getPasswordFromSecret(ctx context.Context) (s
 
 // getSecretName returns the name of the secret for this user.
 func (r *RisingWaveUserReconciler) getSecretName() string {
+	if r.usesConnectionRef() {
+		return "risingwave-direct-" + r.rwUser.Name
+	}
 	return "risingwave-" + r.risingWave.Name + "-" + r.rwUser.Name
 }
 
@@ -1045,7 +1144,8 @@ func (c *RisingWaveUserController) SetupWithManager(mgr ctrl.Manager) error {
 				}
 				var reqs []reconcile.Request
 				for _, user := range userList.Items {
-					if user.Spec.RisingWaveRef.Name != "" {
+					// Only re-queue users that reference a RisingWave CR (not connectionRef users)
+					if user.Spec.RisingWaveRef != nil && user.Spec.RisingWaveRef.Name != "" {
 						reqs = append(reqs, reconcile.Request{
 							NamespacedName: types.NamespacedName{
 								Name:      user.Name,

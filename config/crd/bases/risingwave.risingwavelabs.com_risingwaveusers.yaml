@@ -120,6 +120,61 @@ spec:
                       Defaults to "password" if not specified.
                     type: string
                 type: object
+              connectionRef:
+                description: |-
+                  ConnectionRef specifies a direct connection to an externally managed RisingWave frontend.
+                  Mutually exclusive with risingWaveRef. Exactly one must be specified.
+                properties:
+                  credentials:
+                    description: |-
+                      Credentials for connecting to the RisingWave cluster as an admin.
+                      If omitted, connects with username "root" and empty password.
+                    properties:
+                      password:
+                        description: |-
+                          Password is the plaintext admin password.
+                          Not recommended for production; use passwordSecretRef instead.
+                          Defaults to empty string if neither password nor passwordSecretRef is set.
+                        type: string
+                      passwordSecretRef:
+                        description: |-
+                          PasswordSecretRef references a Kubernetes Secret containing the admin password.
+                          Takes precedence over the password field when both are set.
+                        properties:
+                          key:
+                            description: Key in the secret data containing the password.
+                              Defaults to "password".
+                            type: string
+                          name:
+                            description: Name of the secret.
+                            type: string
+                          namespace:
+                            description: Namespace of the secret. Defaults to the
+                              same namespace as the RisingWaveUser.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      username:
+                        default: root
+                        description: Username to connect with.
+                        type: string
+                    type: object
+                  host:
+                    description: Host is the hostname or IP of the RisingWave frontend
+                      service.
+                    type: string
+                  port:
+                    default: 4567
+                    description: Port is the PostgreSQL-compatible port of the RisingWave
+                      frontend.
+                    format: int32
+                    maximum: 65535
+                    minimum: 1
+                    type: integer
+                required:
+                - host
+                type: object
               grants:
                 description: Privilege grants on database objects.
                 properties:
@@ -453,8 +508,45 @@ spec:
                   type: string
                 type: array
               risingWaveRef:
-                description: Reference to parent RisingWave cluster.
+                description: |-
+                  RisingWaveRef references a RisingWave CR managed by this operator.
+                  Mutually exclusive with connectionRef. Exactly one must be specified.
                 properties:
+                  credentials:
+                    description: |-
+                      Credentials for connecting to the RisingWave cluster as an admin.
+                      If omitted, connects with username "root" and empty password.
+                    properties:
+                      password:
+                        description: |-
+                          Password is the plaintext admin password.
+                          Not recommended for production; use passwordSecretRef instead.
+                          Defaults to empty string if neither password nor passwordSecretRef is set.
+                        type: string
+                      passwordSecretRef:
+                        description: |-
+                          PasswordSecretRef references a Kubernetes Secret containing the admin password.
+                          Takes precedence over the password field when both are set.
+                        properties:
+                          key:
+                            description: Key in the secret data containing the password.
+                              Defaults to "password".
+                            type: string
+                          name:
+                            description: Name of the secret.
+                            type: string
+                          namespace:
+                            description: Namespace of the secret. Defaults to the
+                              same namespace as the RisingWaveUser.
+                            type: string
+                        required:
+                        - name
+                        type: object
+                      username:
+                        default: root
+                        description: Username to connect with.
+                        type: string
+                    type: object
                   name:
                     description: Name of the RisingWave cluster.
                     type: string
@@ -465,8 +557,6 @@ spec:
                 required:
                 - name
                 type: object
-            required:
-            - risingWaveRef
             type: object
           status:
             description: RisingWaveUserStatus defines the observed state of RisingWaveUser.

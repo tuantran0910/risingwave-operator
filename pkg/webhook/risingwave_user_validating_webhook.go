@@ -61,19 +61,39 @@ func (w *RisingWaveUserValidatingWebhook) ValidateUpdate(ctx context.Context, ol
 	fieldErrs := field.ErrorList{}
 	specPath := field.NewPath("spec")
 
-	// Combine warnings from base validation with any update-specific warnings
-	// (no update-specific warnings currently)
 	warnings = baseWarnings
 	if len(warnings) == 0 {
 		warnings = nil
 	}
 
-	// risingWaveRef cannot be changed
-	if oldObj.Spec.RisingWaveRef.Name != newObj.Spec.RisingWaveRef.Name {
+	// Connection type cannot be switched (risingWaveRef <-> connectionRef)
+	oldUsesRWRef := oldObj.Spec.RisingWaveRef != nil
+	newUsesRWRef := newObj.Spec.RisingWaveRef != nil
+	if oldUsesRWRef != newUsesRWRef {
 		fieldErrs = append(fieldErrs, field.Forbidden(
-			specPath.Child("risingWaveRef"),
-			"risingWaveRef.name cannot be changed",
+			specPath,
+			"cannot change connection type between risingWaveRef and connectionRef after creation",
 		))
+	}
+
+	// risingWaveRef.name cannot be changed
+	if oldObj.Spec.RisingWaveRef != nil && newObj.Spec.RisingWaveRef != nil {
+		if oldObj.Spec.RisingWaveRef.Name != newObj.Spec.RisingWaveRef.Name {
+			fieldErrs = append(fieldErrs, field.Forbidden(
+				specPath.Child("risingWaveRef"),
+				"risingWaveRef.name cannot be changed",
+			))
+		}
+	}
+
+	// connectionRef.host cannot be changed
+	if oldObj.Spec.ConnectionRef != nil && newObj.Spec.ConnectionRef != nil {
+		if oldObj.Spec.ConnectionRef.Host != newObj.Spec.ConnectionRef.Host {
+			fieldErrs = append(fieldErrs, field.Forbidden(
+				specPath.Child("connectionRef", "host"),
+				"connectionRef.host cannot be changed",
+			))
+		}
 	}
 
 	// User name cannot be changed once set
@@ -129,36 +149,32 @@ func (w *RisingWaveUserValidatingWebhook) validateObject(ctx context.Context, ob
 	fieldErrs := field.ErrorList{}
 	specPath := field.NewPath("spec")
 
-	// Validate risingWaveRef
-	rwRefPath := specPath.Child("risingWaveRef")
-	if obj.Spec.RisingWaveRef.Name == "" {
-		fieldErrs = append(fieldErrs, field.Required(rwRefPath.Child("name"), "risingWaveRef.name is required"))
+	// --- Mutual exclusion: exactly one of risingWaveRef or connectionRef ---
+	hasRWRef := obj.Spec.RisingWaveRef != nil
+	hasConnRef := obj.Spec.ConnectionRef != nil
+
+	if hasRWRef && hasConnRef {
+		fieldErrs = append(fieldErrs, field.Invalid(
+			specPath.Child("connectionRef"),
+			obj.Spec.ConnectionRef,
+			"cannot specify both risingWaveRef and connectionRef; exactly one is required",
+		))
+	} else if !hasRWRef && !hasConnRef {
+		fieldErrs = append(fieldErrs, field.Required(
+			specPath,
+			"one of risingWaveRef or connectionRef is required",
+		))
 	}
 
-	// Verify referenced RisingWave exists
-	if obj.Spec.RisingWaveRef.Name != "" {
-		namespace := obj.Spec.RisingWaveRef.Namespace
-		if namespace == "" {
-			namespace = obj.Namespace
-		}
-
-		var risingWave risingwavev1alpha1.RisingWave
-		err := w.client.Get(ctx, types.NamespacedName{
-			Namespace: namespace,
-			Name:      obj.Spec.RisingWaveRef.Name,
-		}, &risingWave)
-
-		if err != nil {
-			if apierrors.IsNotFound(err) {
-				fieldErrs = append(fieldErrs, field.NotFound(rwRefPath.Child("name"),
-					fmt.Sprintf("RisingWave %s/%s not found", namespace, obj.Spec.RisingWaveRef.Name)))
-			} else {
-				return nil, fmt.Errorf("failed to get RisingWave: %w", err)
-			}
-		}
+	// --- Validate whichever ref is provided ---
+	if hasRWRef && !hasConnRef {
+		fieldErrs = append(fieldErrs, w.validateRisingWaveRef(ctx, obj, specPath)...)
+	}
+	if hasConnRef && !hasRWRef {
+		fieldErrs = append(fieldErrs, w.validateConnectionRef(obj, specPath)...)
 	}
 
-	// Validate user name
+	// --- User name ---
 	if obj.Spec.Name != "" {
 		namePath := specPath.Child("name")
 		if len(obj.Spec.Name) > 63 {
@@ -170,13 +186,11 @@ func (w *RisingWaveUserValidatingWebhook) validateObject(ctx context.Context, ob
 		}
 	}
 
-	// Validate password configuration
+	// --- Password and auth ---
 	fieldErrs = append(fieldErrs, w.validatePasswordConfig(obj, specPath)...)
-
-	// Validate auth configuration
 	fieldErrs = append(fieldErrs, w.validateAuthConfig(obj, specPath)...)
 
-	// Validate privileges (structural only - value validation delegated to RisingWave)
+	// --- Privileges ---
 	if obj.Spec.Grants != nil {
 		fieldErrs = append(fieldErrs, w.validatePrivileges(obj, specPath)...)
 	}
@@ -187,6 +201,81 @@ func (w *RisingWaveUserValidatingWebhook) validateObject(ctx context.Context, ob
 	}
 
 	return validationWarnings, nil
+}
+
+// validateRisingWaveRef validates the risingWaveRef field.
+func (w *RisingWaveUserValidatingWebhook) validateRisingWaveRef(ctx context.Context, obj *risingwavev1alpha1.RisingWaveUser, specPath *field.Path) field.ErrorList {
+	var fieldErrs field.ErrorList
+	ref := obj.Spec.RisingWaveRef
+	rwRefPath := specPath.Child("risingWaveRef")
+
+	if ref.Name == "" {
+		fieldErrs = append(fieldErrs, field.Required(rwRefPath.Child("name"), "risingWaveRef.name is required"))
+		return fieldErrs
+	}
+
+	// Verify referenced RisingWave exists
+	namespace := ref.Namespace
+	if namespace == "" {
+		namespace = obj.Namespace
+	}
+	var risingWave risingwavev1alpha1.RisingWave
+	err := w.client.Get(ctx, types.NamespacedName{
+		Namespace: namespace,
+		Name:      ref.Name,
+	}, &risingWave)
+	if err != nil {
+		if apierrors.IsNotFound(err) {
+			fieldErrs = append(fieldErrs, field.NotFound(rwRefPath.Child("name"),
+				fmt.Sprintf("RisingWave %s/%s not found", namespace, ref.Name)))
+		} else {
+			// Return early with a non-validation error
+			return field.ErrorList{field.InternalError(rwRefPath, err)}
+		}
+	}
+
+	// Validate credentials if provided
+	if ref.Credentials != nil {
+		fieldErrs = append(fieldErrs, w.validateAdminCredentials(ref.Credentials, rwRefPath.Child("credentials"))...)
+	}
+
+	return fieldErrs
+}
+
+// validateConnectionRef validates the connectionRef field.
+func (w *RisingWaveUserValidatingWebhook) validateConnectionRef(obj *risingwavev1alpha1.RisingWaveUser, specPath *field.Path) field.ErrorList {
+	var fieldErrs field.ErrorList
+	ref := obj.Spec.ConnectionRef
+	connRefPath := specPath.Child("connectionRef")
+
+	if ref.Host == "" {
+		fieldErrs = append(fieldErrs, field.Required(connRefPath.Child("host"), "connectionRef.host is required"))
+	}
+
+	if ref.Port != 0 && (ref.Port < 1 || ref.Port > 65535) {
+		fieldErrs = append(fieldErrs, field.Invalid(connRefPath.Child("port"), ref.Port,
+			"port must be between 1 and 65535"))
+	}
+
+	// Validate credentials if provided
+	if ref.Credentials != nil {
+		fieldErrs = append(fieldErrs, w.validateAdminCredentials(ref.Credentials, connRefPath.Child("credentials"))...)
+	}
+
+	return fieldErrs
+}
+
+// validateAdminCredentials validates AdminCredentials fields.
+func (w *RisingWaveUserValidatingWebhook) validateAdminCredentials(creds *risingwavev1alpha1.AdminCredentials, path *field.Path) field.ErrorList {
+	if creds == nil {
+		return nil
+	}
+	var fieldErrs field.ErrorList
+	if creds.PasswordSecretRef != nil && creds.PasswordSecretRef.Name == "" {
+		fieldErrs = append(fieldErrs, field.Required(path.Child("passwordSecretRef", "name"),
+			"passwordSecretRef.name is required"))
+	}
+	return fieldErrs
 }
 
 // validatePasswordConfig validates password configuration.

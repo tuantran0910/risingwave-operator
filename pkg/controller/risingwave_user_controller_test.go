@@ -154,7 +154,7 @@ func newTestRisingWaveUser(name, namespace, rwName string) *risingwavev1alpha1.R
 			Namespace: namespace,
 		},
 		Spec: risingwavev1alpha1.RisingWaveUserSpec{
-			RisingWaveRef: risingwavev1alpha1.RisingWaveReference{
+			RisingWaveRef: &risingwavev1alpha1.RisingWaveReference{
 				Name:      rwName,
 				Namespace: namespace,
 			},
@@ -942,5 +942,104 @@ func TestRisingWaveUserReconciler_applyPrivileges(t *testing.T) {
 
 		err := r.applyPrivileges(context.Background())
 		assert.NoError(t, err)
+	})
+}
+
+// --- connectionRef controller tests ---
+
+func newTestRisingWaveUserWithConnectionRef(name, namespace, host string) *risingwavev1alpha1.RisingWaveUser {
+	return &risingwavev1alpha1.RisingWaveUser{
+		ObjectMeta: metav1.ObjectMeta{Name: name, Namespace: namespace},
+		Spec: risingwavev1alpha1.RisingWaveUserSpec{
+			ConnectionRef: &risingwavev1alpha1.ConnectionRef{
+				Host: host,
+				Port: 4567,
+			},
+		},
+	}
+}
+
+func TestRisingWaveUserController_usesConnectionRef(t *testing.T) {
+	t.Run("returns true when connectionRef is set", func(t *testing.T) {
+		rwUser := newTestRisingWaveUserWithConnectionRef("test-user", "default", "my-rw.default.svc")
+		r := &RisingWaveUserReconciler{
+			RisingWaveUserController: &RisingWaveUserController{},
+			rwUser:                   rwUser,
+		}
+		assert.True(t, r.usesConnectionRef())
+	})
+
+	t.Run("returns false when risingWaveRef is set", func(t *testing.T) {
+		rwUser := newTestRisingWaveUser("test-user", "default", "test-rw")
+		r := &RisingWaveUserReconciler{
+			RisingWaveUserController: &RisingWaveUserController{},
+			rwUser:                   rwUser,
+		}
+		assert.False(t, r.usesConnectionRef())
+	})
+}
+
+func TestRisingWaveUserController_getSecretName_connectionRef(t *testing.T) {
+	t.Run("secret name with connectionRef", func(t *testing.T) {
+		rwUser := newTestRisingWaveUserWithConnectionRef("my-user", "default", "my-rw.default.svc")
+		r := &RisingWaveUserReconciler{
+			RisingWaveUserController: &RisingWaveUserController{},
+			rwUser:                   rwUser,
+		}
+		assert.Equal(t, "risingwave-direct-my-user", r.getSecretName())
+	})
+
+	t.Run("secret name with risingWaveRef unchanged", func(t *testing.T) {
+		rwUser := newTestRisingWaveUser("test-user", "default", "test-rw")
+		rw := newTestRisingWave("test-rw", "default")
+		r := &RisingWaveUserReconciler{
+			RisingWaveUserController: &RisingWaveUserController{},
+			rwUser:                   rwUser,
+			risingWave:               rw,
+		}
+		assert.Equal(t, "risingwave-test-rw-test-user", r.getSecretName())
+	})
+}
+
+func TestRisingWaveUserController_resolveAdminCredentials(t *testing.T) {
+	t.Run("nil credentials: defaults to root / empty", func(t *testing.T) {
+		rwUser := newTestRisingWaveUser("test-user", "default", "test-rw")
+		r := &RisingWaveUserReconciler{
+			RisingWaveUserController: &RisingWaveUserController{},
+			rwUser:                   rwUser,
+		}
+		username, password, err := r.resolveAdminCredentials(context.Background(), nil)
+		require.NoError(t, err)
+		assert.Equal(t, "root", username)
+		assert.Equal(t, "", password)
+	})
+
+	t.Run("plain password field", func(t *testing.T) {
+		rwUser := newTestRisingWaveUser("test-user", "default", "test-rw")
+		r := &RisingWaveUserReconciler{
+			RisingWaveUserController: &RisingWaveUserController{},
+			rwUser:                   rwUser,
+		}
+		creds := &risingwavev1alpha1.AdminCredentials{
+			Username: "admin",
+			Password: "s3cr3t",
+		}
+		username, password, err := r.resolveAdminCredentials(context.Background(), creds)
+		require.NoError(t, err)
+		assert.Equal(t, "admin", username)
+		assert.Equal(t, "s3cr3t", password)
+	})
+
+	t.Run("custom username only", func(t *testing.T) {
+		rwUser := newTestRisingWaveUser("test-user", "default", "test-rw")
+		r := &RisingWaveUserReconciler{
+			RisingWaveUserController: &RisingWaveUserController{},
+			rwUser:                   rwUser,
+		}
+		creds := &risingwavev1alpha1.AdminCredentials{Username: "superuser"}
+		username, password, err := r.resolveAdminCredentials(context.Background(), creds)
+		require.NoError(t, err)
+		assert.Equal(t, "superuser", username)
+		assert.Equal(t, "", password)
 	})
 }
