@@ -9,8 +9,8 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: webhook-service
-      namespace: system
+      name: risingwave-operator-webhook-service
+      namespace: risingwave-operator-system
       path: /mutate-risingwave-risingwavelabs-com-v1alpha1-risingwave
   failurePolicy: Fail
   name: mrisingwave.kb.io
@@ -28,8 +28,8 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: webhook-service
-      namespace: system
+      name: risingwave-operator-webhook-service
+      namespace: risingwave-operator-system
       path: /mutate-risingwave-risingwavelabs-com-v1alpha1-risingwavescaleview
   failurePolicy: Fail
   name: mrisingwavescaleview.kb.io
@@ -54,8 +54,8 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: webhook-service
-      namespace: system
+      name: risingwave-operator-webhook-service
+      namespace: risingwave-operator-system
       path: /validate-risingwave-risingwavelabs-com-v1alpha1-risingwave
   failurePolicy: Fail
   name: vrisingwave.kb.io
@@ -75,8 +75,8 @@ webhooks:
   - v1
   clientConfig:
     service:
-      name: webhook-service
-      namespace: system
+      name: risingwave-operator-webhook-service
+      namespace: risingwave-operator-system
       path: /validate-risingwave-risingwavelabs-com-v1alpha1-risingwavescaleview
   failurePolicy: Fail
   name: vrisingwavescaleview.kb.io
@@ -91,4 +91,24 @@ webhooks:
     - DELETE
     resources:
     - risingwavescaleview
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: risingwave-operator-webhook-service
+      namespace: risingwave-operator-system
+      path: /validate-risingwave-risingwavelabs-com-v1alpha1-risingwaveuser
+  failurePolicy: Fail
+  name: vrisingwaveuser.kb.io
+  rules:
+  - apiGroups:
+    - risingwave.risingwavelabs.com
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - risingwaveusers
   sideEffects: None

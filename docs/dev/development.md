@@ -120,6 +120,8 @@ make docker-cross-build
 
 ## Debugging the RisingWave operator
 
+For a comprehensive guide on setting up a local `kind` cluster and deploying the operator and RisingWave for testing, please refer to the [Local Testing Guide](local-testing-guide.md).
+
 The RisingWave operator consists of two main components
 
 * a webhook server serving the mutating and validation webhooks

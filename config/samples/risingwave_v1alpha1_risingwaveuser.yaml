@@ -1,0 +1,173 @@
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: example-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  permissions:
+    - CREATEDB
+  grants:
+    databases:
+      - name: dev
+        grants: [CONNECT, CREATE]
+        schemas:
+          - name: public
+            grants: [USAGE, CREATE]
+            tables:
+              - name: "orders"
+                grants: [SELECT, INSERT]
+              - name: "customers"
+                grants: [SELECT, UPDATE]
+            views:
+              - name: "order_summary"
+                grants: [SELECT]
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: analytics-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  permissions:
+    - CREATEDB  # Allow creating databases for analysis
+  grants:
+    databases:
+      - name: analytics
+        grants: [CONNECT, CREATE]
+        schemas:
+          - name: public
+            grants: [USAGE, CREATE]
+            tables:
+              - name: "events"
+                grants: [SELECT, INSERT, UPDATE, DELETE]
+              - name: "metrics"
+                grants: [SELECT]
+            materializedViews:
+              - name: "daily_summary"
+                grants: [SELECT]
+            sources:
+              - name: "kafka_source"
+                grants: [SELECT]
+            sinks:
+              - name: "elasticsearch_sink"
+                grants: [SELECT]
+            connections:
+              - name: "kafka_conn"
+                grants: [USAGE]
+            secrets:
+              - name: "api_keys"
+                grants: [USAGE]
+            functions:
+              - name: "process_data"
+                grants: [EXECUTE]
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: ingestion-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  grants:
+    databases:
+      - name: production
+        grants: [CONNECT, CREATE]
+        schemas:
+          - name: ingestion
+            grants: [USAGE, CREATE]
+            tables:
+              - name: "*"
+                grants: [INSERT, UPDATE, DELETE]
+            sources:
+              - name: "*"
+                grants: [SELECT]
+            sinks:
+              - name: "*"
+                grants: [SELECT]
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: oauth-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  auth:
+    type: oauth
+    oauth:
+      jwksUrl: "https://auth.example.com/.well-known/jwks.json"
+      issuer: "risingwave"
+      audience:
+        - "risingwave"
+  grants:
+    databases:
+      - name: dev
+        grants: [CONNECT]
+
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: ldap-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  auth:
+    type: ldap
+    ldap:
+      host: "ldap.example.com"
+      port: 389
+      baseDN: "dc=example,dc=com"
+      useSSL: false
+      insecureSkipVerify: false
+  grants:
+    databases:
+      - name: dev
+        grants: [CONNECT]
+
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: my-risingwave-user  # Kubernetes resource name
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  name: "my_db_user"  # Actual username in RisingWave
+  grants:
+    databases:
+      - name: dev
+        schemas:
+          - name: public
+            tables:
+              - name: "orders"
+                grants: [SELECT, INSERT]
+---
+apiVersion: risingwave.risingwavelabs.com/v1alpha1
+kind: RisingWaveUser
+metadata:
+  name: developer-user
+spec:
+  risingWaveRef:
+    name: risingwave-sample
+  permissions:
+    - CREATEDB
+    - NOSUPERUSER
+  grants:
+    databases:
+      - name: dev
+        grants: [CONNECT, CREATE]
+        schemas:
+          - name: public
+            grants: [USAGE, CREATE]
+            tables:
+              - name: "projects"
+                grants: [SELECT, INSERT, UPDATE, DELETE, TRIGGER]
+            functions:
+              - name: "helper_functions"
+                grants: [EXECUTE]
+            connections:
+              - name: "db_connections"
+                grants: [USAGE]

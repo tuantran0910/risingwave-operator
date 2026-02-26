@@ -40,5 +40,11 @@ func SetupWebhooksWithManager(mgr ctrl.Manager, openKruiseAvailable bool) error 
 		return fmt.Errorf("unable to setup webhooks for risingwave scale view: %w", err)
 	}
 
+	if err := ctrl.NewWebhookManagedBy(mgr, &risingwavev1alpha1.RisingWaveUser{}).
+		WithValidator(NewRisingWaveUserValidatingWebhook(mgr.GetClient())).
+		Complete(); err != nil {
+		return fmt.Errorf("unable to setup webhooks for risingwave user: %w", err)
+	}
+
 	return nil
 }
