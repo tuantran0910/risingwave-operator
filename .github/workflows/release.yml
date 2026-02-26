@@ -1,20 +1,82 @@
 name: Release Pipeline
 
 on:
-  release:
-    types: [ published ]
+  push:
+    tags:
+      - "release"
+  workflow_dispatch:
 
 jobs:
+  setup:
+    name: setup
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      image_tag: ${{ steps.tag.outputs.image_tag }}
+    steps:
+      - name: Delete release tag
+        run: |
+          curl -s -X DELETE \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/git/refs/tags/release" || true
+
+      - name: Compute image tag
+        id: tag
+        run: |
+          DATE_PREFIX=$(date -u +"%Y%m.%d")
+          EXISTING=$(curl -s \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/users/tuantran0910/packages/container/risingwave-operator/versions" \
+            | jq -r '.[].metadata.container.tags[]' 2>/dev/null \
+            | grep "^${DATE_PREFIX}\." || true)
+          if [ -z "$EXISTING" ]; then
+            N=0
+          else
+            MAX_N=$(echo "$EXISTING" | sed "s/^${DATE_PREFIX}\.//" | sort -n | tail -1)
+            N=$((MAX_N + 1))
+          fi
+          echo "image_tag=${DATE_PREFIX}.${N}" >> "$GITHUB_OUTPUT"
+
   build-and-upload-manifests:
     name: build-and-upload-manifests
     runs-on: ubuntu-latest
+    needs: setup
+    permissions:
+      contents: write
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-go@v3
-      with:
-        go-version: 1.23
-    - run: make generate-yaml TAG="${{ github.ref_name }}"
-    - uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
-      with:
-        files: config/risingwave-operator.yaml
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+      - run: make generate-yaml TAG="${{ needs.setup.outputs.image_tag }}"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.setup.outputs.image_tag }}
+          files: config/risingwave-operator.yaml
+
+  build-and-push-images:
+    name: build-and-push-images
+    runs-on: ubuntu-latest
+    needs: setup
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - run: git fetch --prune --unshallow
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: build/Dockerfile
+          build-args: VERSION=${{ needs.setup.outputs.image_tag }}
+          push: true
+          platforms: linux/amd64
+          tags: ghcr.io/tuantran0910/risingwave-operator:${{ needs.setup.outputs.image_tag }}
